@@ -154,58 +154,135 @@ async function initHomePage() {
   const loginToggle = document.getElementById('openLogin');
   const loginPanel = document.getElementById('loginPanel');
   const loginForm = document.getElementById('loginForm');
-  const loginMessage = document.getElementById('loginMessage');
+  const emailInput = document.getElementById('emailInput');
+  const emailError = document.getElementById('emailError');
+  const passwordInput = document.getElementById('passwordInput');
+  const capsWarning = document.getElementById('capsWarning');
+  const togglePasswordBtn = document.getElementById('togglePassword');
+  const signInButton = document.getElementById('signInButton');
+  const loginError = document.getElementById('loginError');
 
-  if (!loginToggle || !loginPanel || !loginForm || !loginMessage) return;
+  if (!loginPanel || !loginForm || !emailInput || !passwordInput) return;
 
-  console.log('initHomePage elements:', { loginToggle, loginPanel, loginForm, loginMessage });
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  loginToggle.addEventListener('click', () => {
-    console.log('openLogin clicked');
-    loginPanel.classList.toggle('hidden');
+  // Toggle panel (preserve existing toggle behavior) and focus email when opened
+  if (loginToggle) {
+    loginToggle.addEventListener('click', () => {
+      loginPanel.classList.toggle('hidden');
+      // keep ARIA in sync
+      loginPanel.setAttribute('aria-hidden', String(loginPanel.classList.contains('hidden')));
+      if (!loginPanel.classList.contains('hidden')) {
+        setTimeout(() => emailInput.focus(), 180);
+      }
+    });
+  }
+
+  // Email inline validation
+  emailInput.addEventListener('input', () => {
+    const val = (emailInput.value || '').trim();
+    if (!val) {
+      emailError.textContent = '';
+      return;
+    }
+    if (!emailRegex.test(val)) {
+      emailError.textContent = 'Please enter a valid email address.';
+    } else {
+      emailError.textContent = '';
+    }
   });
+
+  // Password show/hide toggle
+  if (togglePasswordBtn) {
+    const eye = togglePasswordBtn.querySelector('.icon-eye');
+    const eyeSlash = togglePasswordBtn.querySelector('.icon-eye-slash');
+    togglePasswordBtn.addEventListener('click', () => {
+      const showing = passwordInput.type === 'text';
+      passwordInput.type = showing ? 'password' : 'text';
+      togglePasswordBtn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      if (eye) eye.classList.toggle('hidden');
+      if (eyeSlash) eyeSlash.classList.toggle('hidden');
+    });
+  }
+
+  // Caps Lock detection and Enter key support in password field
+  const capsCheck = (e) => {
+    if (e.getModifierState && e.getModifierState('CapsLock')) {
+      capsWarning.textContent = 'Caps Lock is on.';
+    } else {
+      capsWarning.textContent = '';
+    }
+  };
+  passwordInput.addEventListener('keydown', (e) => {
+    capsCheck(e);
+    if (e.key === 'Enter') {
+      // trigger form submission
+      e.preventDefault();
+      loginForm.requestSubmit ? loginForm.requestSubmit() : loginForm.submit();
+    }
+  });
+  passwordInput.addEventListener('keyup', capsCheck);
+
+  let processing = false;
 
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const email = (loginForm.elements.email.value || '').trim();
+    emailError.textContent = '';
+    loginError.textContent = '';
 
-    if (!email) {
-      loginMessage.textContent = 'Please enter a valid email.';
+    const email = (emailInput.value || '').trim();
+    if (!emailRegex.test(email)) {
+      emailError.textContent = 'Please enter a valid email address.';
+      emailInput.focus();
       return;
     }
 
-    const password = (loginForm.elements.password.value || '').trim();
+    const password = (passwordInput.value || '').trim();
     if (!password) {
-      loginMessage.textContent = 'Invalid email or password.';
+      loginError.textContent = 'Email or password is incorrect. Please try again.';
+      passwordInput.focus();
       return;
     }
 
-    const user = await getUserByEmail(email.toLowerCase());
-    if (!user) {
-      loginMessage.textContent = 'Invalid email or password.';
-      console.log('login failed: user not found for', email);
-      return;
-    }
+    if (processing) return;
+    processing = true;
 
-    const passwordHash = await hashPassword(password);
-    if (!user.password || user.password !== passwordHash) {
-      loginMessage.textContent = 'Invalid email or password.';
-      console.log('login failed: wrong password for', email);
-      return;
-    }
+    // disable button, show spinner, update text
+    const btnText = signInButton?.querySelector('.btn-text');
+    const btnSpinner = signInButton?.querySelector('.btn-spinner');
+    if (signInButton) signInButton.disabled = true;
+    if (btnSpinner) btnSpinner.classList.remove('hidden');
+    if (btnText) btnText.textContent = 'Signing In...';
 
-    setCurrentUser(user);
-    loginMessage.textContent = 'Logged in successfully! Redirecting to dashboard...';
-    console.log('login success for', email, 'role=', user.role);
+    try {
+      const user = await getUserByEmail(email.toLowerCase());
+      if (!user) {
+        loginError.textContent = 'Email or password is incorrect. Please try again.';
+        throw new Error('user-not-found');
+      }
 
-    setTimeout(() => {
+      const passwordHash = await hashPassword(password);
+      if (!user.password || user.password !== passwordHash) {
+        loginError.textContent = 'Email or password is incorrect. Please try again.';
+        throw new Error('invalid-credentials');
+      }
+
+      setCurrentUser(user);
+      // Redirect according to role without alerts
       const role = user.role || (user.weakSubjects?.length ? 'student' : 'tutor');
       if (role === 'student') {
         location.href = 'student.html';
       } else {
         location.href = 'tutor.html';
       }
-    }, 900);
+    } catch (err) {
+      console.log('login attempt error', err);
+      // restore button state
+      processing = false;
+      if (signInButton) signInButton.disabled = false;
+      if (btnSpinner) btnSpinner.classList.add('hidden');
+      if (btnText) btnText.textContent = 'Sign In';
+    }
   });
 }
 

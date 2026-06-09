@@ -30,14 +30,41 @@
         <a class="btn" href="register.html">Register</a>
         <button type="button" id="openLogin" class="btn secondary">Login</button>
       </div>
-      <div id="loginPanel" class="card login-panel hidden" style="margin-top: 1rem;">
-        <h2>Existing user login</h2>
-        <form id="loginForm">
-          <label>Email<input type="email" name="email" required /></label>
-          <label>Password<input type="password" name="password" required minlength="6" /></label>
-          <button type="submit" class="btn">Login</button>
+      <div id="loginPanel" class="card login-panel hidden" aria-hidden="true" style="margin-top: 1rem;">
+        <div class="login-header">
+          <h2>Welcome Back</h2>
+          <p class="subtitle">Sign in to access your PeerBridge account.</p>
+        </div>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="emailInput">Email</label>
+            <input id="emailInput" type="email" name="email" required autocomplete="username" />
+            <div id="emailError" class="field-error" aria-live="polite"></div>
+          </div>
+
+          <div class="field">
+            <label for="passwordInput">Password</label>
+            <div class="password-wrapper">
+              <input id="passwordInput" type="password" name="password" required minlength="6" autocomplete="current-password" />
+              <button type="button" id="togglePassword" class="icon-btn" aria-label="Show password">
+                <!-- eye (visible) -->
+                <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- eye-slash (hidden by default) -->
+                <svg class="icon-eye-slash hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a22.65 22.65 0 0 1 5.36-6.14"></path><path d="M1 1l22 22"></path></svg>
+              </button>
+            </div>
+            <div id="capsWarning" class="field-warning" aria-live="polite"></div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="signInButton" class="btn primary">
+              <span class="btn-text">Sign In</span>
+              <span class="btn-spinner hidden" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div id="loginError" class="form-error" role="alert" aria-live="assertive"></div>
         </form>
-        <p id="loginMessage" class="message"></p>
       </div>
     </section>
     <section class="features">
