@@ -166,9 +166,10 @@ async function openProfileModal(userId, contextType) {
   const weakTags = (target.weakSubjects || []).map(s => `<span class="tag">${s}</span>`).join('');
   const availability = (target.availabilityDays || []).map(d => `<span class="badge">${d}</span>`).join('') + ' ' + (target.availabilityTime || []).map(t => `<span class="badge">${t}</span>`).join(' ');
   const address = target.address || {};
-    const left = `<div class="profile-left"><div class="avatar-placeholder">${(target.name||'?').slice(0,1)}</div><div><h3>${target.name || 'Unknown'}</h3><div class="meta"><span class="stars">${'★'.repeat(ratingToStars(target.rating != null ? target.rating : 3))}</span></div></div></div>`;
-  const middle = `<div class="profile-middle"><div class="card"><div class="profile-label">Email</div><div class="profile-value">${target.email || '-'}</div></div><div class="card"><div class="profile-label">Phone</div><div class="profile-value">${target.phone || '-'}</div></div><div class="card"><div class="profile-label">Region</div><div class="profile-value">${target.region || '-'}</div></div><div class="card"><div class="profile-label">Address</div><div class="profile-value">${address.doorNumber ? address.doorNumber + ', ' : ''}${address.street ? address.street + '<br/>' : ''}${address.city ? address.city + '<br/>' : ''}${address.state ? address.state + ' - ' : ''}${address.postalCode || ''}</div></div><div class="card"><div class="profile-label">Availability</div><div class="profile-value">${availability || '-'}</div></div></div>`;
-  const right = `<div class="profile-right"><div class="card"><div class="profile-label">Subjects</div><div class="profile-value"><strong>Strong:</strong> ${strongTags || '-'}<br/><strong>Weak:</strong> ${weakTags || '-'}</div></div><div class="card"><div class="profile-label">About</div><div class="profile-value">${target.bio || 'No bio added.'}</div></div><div id="reviewsPreview" class="card"><div class="profile-label">Reviews</div><div class="profile-value">Loading...</div></div></div>`;
+  const addressText = `${address.doorNumber ? address.doorNumber + ', ' : ''}${address.street ? address.street + '<br/>' : ''}${address.city ? address.city + '<br/>' : ''}${address.state ? address.state + ' - ' : ''}${address.postalCode || ''}`;
+  const left = `<div class="profile-left"><div class="profile-identity card"><div class="avatar-placeholder">${(target.name||'?').slice(0,1)}</div><div><h3>${target.name || 'Unknown'}</h3><div class="meta"><span class="stars">${'★'.repeat(ratingToStars(target.rating != null ? target.rating : 3))}</span><span class="review-count"> ${target.totalRatings || 0} Reviews</span></div></div></div><div class="card"><div class="profile-label">Email</div><div class="profile-value">${target.email || '-'}</div></div><div class="card"><div class="profile-label">Phone</div><div class="profile-value">${target.phone || '-'}</div></div><div class="card"><div class="profile-label">Region</div><div class="profile-value">${target.region || '-'}</div></div></div>`;
+  const middle = `<div class="profile-middle"><div class="card"><div class="profile-label">Address</div><div class="profile-value">${addressText || '-'}</div></div><div class="card"><div class="profile-label">Availability</div><div class="profile-value">${availability || '-'}</div></div><div class="card"><div class="profile-label">Strong Subjects</div><div class="profile-value">${strongTags || '-'}</div></div><div class="card"><div class="profile-label">Weak Subjects</div><div class="profile-value">${weakTags || '-'}</div></div><div class="card"><div class="profile-label">About Me</div><div class="profile-value">${target.bio || 'No bio added.'}</div></div></div>`;
+  const right = `<div class="profile-right"><div id="reviewsPreview" class="card reviews-column"><div class="profile-label">Reviews</div><div class="profile-value">Loading...</div></div></div>`;
   const footer = `<div class="actions"><button id="closeModalBtn" class="btn secondary">Close</button> ${(contextType === 'tutor') ? `<button class="btn request-session" data-id="${userId}">Request Session</button>` : `<button class="btn offer-help" data-id="${userId}">Offer Help</button>`}</div>`;
   const gridHtml = `<div class="profile-modal-grid">${left}${middle}${right}</div>${footer}`;
   openModal(gridHtml);
@@ -178,37 +179,7 @@ async function openProfileModal(userId, contextType) {
   modalContainer?.querySelector('.offer-help')?.addEventListener('click', (e) => { const id = e.target.dataset.id; openSessionModal(id, 'offer'); });
   const modalEl = modalContainer?.querySelector('.modal');
   if (modalEl) {
-    modalEl.classList.add('compact','solid');
-    modalEl.style.maxWidth = '1100px';
-    modalEl.style.width = 'min(1100px, 92vw)';
-    modalEl.style.overflow = 'visible';
-    const grid = modalEl.querySelector('.profile-modal-grid');
-    if (grid) {
-      grid.style.display = 'grid';
-      grid.style.gridTemplateColumns = 'minmax(220px, 320px) 1fr minmax(260px, 380px)';
-      grid.style.gap = '18px';
-      grid.style.alignItems = 'start';
-      grid.style.gridAutoFlow = 'column';
-    }
-    // limit modal height and keep columns from growing the modal
-    modalEl.style.maxHeight = '80vh';
-    modalEl.style.overflowY = 'hidden';
-    // ensure columns can scroll internally if their content is long
-    const leftCol = modalEl.querySelector('.profile-left');
-    const midCol = modalEl.querySelector('.profile-middle');
-    const rightCol = modalEl.querySelector('.profile-right');
-    [leftCol, midCol, rightCol].forEach(col => {
-      if (col) { col.style.maxHeight = '68vh'; col.style.overflowY = 'auto'; }
-    });
-    const reviewsCol = modalEl.querySelector('#reviewsPreview');
-    if (reviewsCol) {
-      reviewsCol.style.maxHeight = '64vh';
-      reviewsCol.style.overflowY = 'auto';
-      reviewsCol.style.paddingRight = '8px';
-      reviewsCol.style.display = 'flex';
-      reviewsCol.style.flexDirection = 'column';
-      reviewsCol.style.gap = '8px';
-    }
+    modalEl.classList.add('profile-modal','solid');
   }
   (async () => {
     try {
@@ -216,17 +187,19 @@ async function openProfileModal(userId, contextType) {
       const preview = document.getElementById('reviewsPreview');
       if (!preview) return;
       preview.innerHTML = '';
-      if (!reviews.length) { preview.innerHTML = '<div class="profile-value">No reviews yet.</div>'; return; }
+      if (!reviews.length) { preview.innerHTML = '<div class="profile-label">Reviews</div><div class="profile-value">No reviews yet.</div>'; return; }
       const avg = target.rating != null ? ratingToStars(target.rating) : 3;
-      const avgHtml = `<div class="stars">${'★'.repeat(avg)}</div><div style="margin-top:6px;">(${target.totalRatings || 0} Reviews)</div>`;
+      const avgHtml = `<div class="reviews-summary"><div class="stars">${'★'.repeat(avg)}</div><div>${target.totalRatings || 0} Reviews</div></div>`;
       const list = document.createElement('div');
+      list.className = 'review-list';
       reviews.slice().reverse().slice(0,5).forEach(r => {
-        const card = document.createElement('div'); card.className = 'card';
+        const card = document.createElement('div'); card.className = 'card review-card';
         const stars = '★'.repeat(Math.max(1, Math.min(5, Math.round(r.rating))));
-        const feedbackText = r.feedback ? `"${r.feedback}"` : '';
-        card.innerHTML = `<div class="stars">${stars}</div><div style="margin-top:6px;"><strong>${r.reviewerName || 'Reviewer'}</strong> • ${new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt || Date.now())).toLocaleDateString()}</div><div style="margin-top:8px;">${feedbackText}</div>`;
+        const feedbackText = r.feedback ? `"${r.feedback}"` : 'No written feedback.';
+        card.innerHTML = `<div class="stars">${stars}</div><div class="review-meta"><strong>${r.reviewerName || 'Reviewer'}</strong><span>${new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt || Date.now())).toLocaleDateString()}</span></div><div class="review-feedback">${feedbackText}</div>`;
         list.appendChild(card);
       });
+      preview.innerHTML = '<div class="profile-label">Reviews</div>';
       preview.appendChild((() => { const d=document.createElement('div'); d.innerHTML = avgHtml; return d; })());
       preview.appendChild(list);
     } catch (err) { console.error('Failed to load reviews', err); }
@@ -247,14 +220,11 @@ async function openSessionModal(targetUserId, mode) {
   if (!common.length) { showToast('No subjects in common to schedule a session.'); return; }
   const subjectOptions = common.map(s => `<option value="${s}">${s}</option>`).join('');
   const title = mode === 'request' ? 'Request a Learning Session' : 'Offer Learning Support';
-  const body = `<div><h3>${title}</h3><div class="card"><label>Subject<select id="sessionSubject">${subjectOptions}</select></label><label>Session Date<input id="sessionDate" type="date" /></label><div id="timeSlots" style="margin-top:8px;"><button type="button" class="btn time-slot" data-slot="Morning">🌅 Morning</button><button type="button" class="btn time-slot" data-slot="Afternoon">☀️ Afternoon</button><button type="button" class="btn time-slot" data-slot="Evening">🌙 Evening</button></div></div><div class="actions"><button id="cancelSessionBtn" class="btn secondary">Cancel</button><button id="sendSessionBtn" class="btn"><span class="btn-text">Send ${mode==='request'?'Request':'Offer'}</span><span class="btn-spinner hidden" aria-hidden="true"></span></button></div></div>`;
+  const body = `<div class="session-dialog"><h3>${title}</h3><div class="card session-form-card"><label>Subject<select id="sessionSubject">${subjectOptions}</select></label><label>Session Date<input id="sessionDate" type="date" /></label><div id="timeSlots" class="time-slots"><button type="button" class="btn time-slot" data-slot="Morning">🌅 Morning</button><button type="button" class="btn time-slot" data-slot="Afternoon">☀️ Afternoon</button><button type="button" class="btn time-slot" data-slot="Evening">🌙 Evening</button></div></div><div class="actions"><button id="cancelSessionBtn" class="btn secondary">Cancel</button><button id="sendSessionBtn" class="btn"><span class="btn-text">Send ${mode==='request'?'Request':'Offer'}</span><span class="btn-spinner hidden" aria-hidden="true"></span></button></div></div>`;
   openModal(body);
   const modalEl2 = modalContainer.querySelector('.modal');
   if (modalEl2) {
-    modalEl2.classList.add('solid');
-    // slightly lighten background for readability
-    modalEl2.style.backgroundColor = 'rgba(28,28,28,0.95)';
-    modalEl2.style.color = 'inherit';
+    modalEl2.classList.add('session-modal','solid');
   }
   let selectedSlot = null;
   const sendBtn = modalContainer.querySelector('#sendSessionBtn');
@@ -263,17 +233,15 @@ async function openSessionModal(targetUserId, mode) {
   // add a small label and make selected state visually obvious
   const timeSlotsEl = modalContainer.querySelector('#timeSlots');
   if (timeSlotsEl) {
-    const labelEl = document.createElement('div'); labelEl.textContent = 'Select a Time Slot'; labelEl.style.marginTop = '8px'; labelEl.style.fontWeight = '600'; labelEl.style.marginBottom = '6px';
+    const labelEl = document.createElement('div'); labelEl.textContent = 'Select a Time Slot'; labelEl.className = 'time-slot-label';
     timeSlotsEl.parentNode.insertBefore(labelEl, timeSlotsEl);
   }
   modalContainer.querySelectorAll('.time-slot').forEach(btn => btn.addEventListener('click', (e) => {
     modalContainer.querySelectorAll('.time-slot').forEach(b => {
       b.classList.remove('active');
-      b.style.background = ''; b.style.color = ''; b.style.boxShadow = '';
     });
     const cur = e.currentTarget;
     cur.classList.add('active');
-    cur.style.background = '#2a9d8f'; cur.style.color = '#fff'; cur.style.boxShadow = '0 6px 18px rgba(42,157,143,0.14)';
     selectedSlot = cur.dataset.slot;
     if (sendBtn) sendBtn.disabled = false;
   }));
@@ -456,7 +424,7 @@ async function setupNotificationBell() {
       } else if (st === 'accepted') {
         const badge = document.createElement('span'); badge.className = 'badge-status badge-accepted'; badge.textContent = 'Accepted';
         // style to match app palette and typography
-        badge.style.backgroundColor = '#2a9d8f'; badge.style.color = '#fff'; badge.style.padding = '6px 10px'; badge.style.borderRadius = '14px'; badge.style.fontWeight = '600'; badge.style.fontFamily = 'inherit'; actions.appendChild(badge);
+        badge.style.background = 'linear-gradient(135deg, #d5b893, #6f4d38)'; badge.style.color = '#fff'; badge.style.padding = '6px 10px'; badge.style.borderRadius = '14px'; badge.style.fontWeight = '600'; badge.style.fontFamily = 'inherit'; actions.appendChild(badge);
       } else if (st === 'declined') {
         const badge = document.createElement('span'); badge.className = 'badge-status badge-declined'; badge.textContent = 'Declined';
         badge.style.backgroundColor = '#6c757d'; badge.style.color = '#fff'; badge.style.padding = '6px 10px'; badge.style.borderRadius = '14px'; badge.style.fontWeight = '600'; badge.style.fontFamily = 'inherit'; actions.appendChild(badge);
@@ -465,7 +433,7 @@ async function setupNotificationBell() {
       // visual unread marker (only for unread items)
       if (n.unread) {
         card.classList.add('notif-unread');
-        card.style.borderLeft = '4px solid #2a9d8f';
+        card.style.borderLeft = '4px solid #d5b893';
       } else {
         card.classList.remove('notif-unread');
         card.style.borderLeft = '';
@@ -1015,24 +983,31 @@ async function initProfilePage() {
   const weakTags = (userToShow.weakSubjects || []).map(s => `<span class="tag">${s}</span>`).join('');
   const availability = (userToShow.availabilityDays || []).map(d => `<span class="badge">${d}</span>`).join('') + ' ' + (userToShow.availabilityTime || []).map(t => `<span class="badge">${t}</span>`).join(' ');
   const address = userToShow.address || {};
+  const addressText = `${address.doorNumber ? address.doorNumber + ', ' : ''}${address.street ? address.street + '<br/>' : ''}${address.city ? address.city + '<br/>' : ''}${address.state ? address.state + ' - ' : ''}${address.postalCode || ''}`;
   const starCount = ratingToStars(userToShow.rating != null ? userToShow.rating : 3);
   const starsHtml = '<span class="stars">' + '★'.repeat(starCount) + '</span>';
-  const reviewsSummary = `<div style="margin-top:8px;">${starsHtml} <span>(${userToShow.totalRatings || 0} Reviews)</span></div>`;
-  profileContent.innerHTML = `<div class="modal"><div class="modal-header"><div class="avatar-placeholder">${(userToShow.name||'?').slice(0,1)}</div><div><h3>${userToShow.name || 'Unknown'}</h3>${reviewsSummary}</div></div><div class="card"><p>📧 ${userToShow.email || '-'}</p><p>📱 ${userToShow.phone || '-'}</p><p>📍 ${userToShow.region || '-'}</p></div><div class="card"><strong>Address</strong><div>${address.doorNumber ? address.doorNumber + ', ' : ''}${address.street ? address.street + ', ' : ''}${address.city ? address.city + ', ' : ''}${address.state ? address.state + ' - ' : ''}${address.postalCode || ''}</div></div><div class="card"><strong>Strong Subjects</strong><div>${strongTags || '-'}</div><strong>Weak Subjects</strong><div>${weakTags || '-'}</div></div><div class="card"><strong>Availability</strong><div>${availability || '-'}</div></div><div class="card"><strong>About Me</strong><div>${userToShow.bio || 'No bio added.'}</div></div></div>`;
+  const reviewsSummary = `<div class="meta">${starsHtml}<span class="review-count"> ${userToShow.totalRatings || 0} Reviews</span></div>`;
+  const left = `<div class="profile-left"><div class="profile-identity card"><div class="avatar-placeholder">${(userToShow.name||'?').slice(0,1)}</div><div><h3>${userToShow.name || 'Unknown'}</h3>${reviewsSummary}</div></div><div class="card"><div class="profile-label">Email</div><div class="profile-value">${userToShow.email || '-'}</div></div><div class="card"><div class="profile-label">Phone</div><div class="profile-value">${userToShow.phone || '-'}</div></div><div class="card"><div class="profile-label">Region</div><div class="profile-value">${userToShow.region || '-'}</div></div></div>`;
+  const middle = `<div class="profile-middle"><div class="card"><div class="profile-label">Address</div><div class="profile-value">${addressText || '-'}</div></div><div class="card"><div class="profile-label">Availability</div><div class="profile-value">${availability || '-'}</div></div><div class="card"><div class="profile-label">Strong Subjects</div><div class="profile-value">${strongTags || '-'}</div></div><div class="card"><div class="profile-label">Weak Subjects</div><div class="profile-value">${weakTags || '-'}</div></div><div class="card"><div class="profile-label">About Me</div><div class="profile-value">${userToShow.bio || 'No bio added.'}</div></div></div>`;
+  const right = `<div class="profile-right"><div id="profileReviews" class="card reviews-column"><div class="profile-label">Reviews</div><div class="profile-value">No reviews yet.</div></div></div>`;
+  profileContent.innerHTML = `<div class="profile-page-shell"><div class="profile-modal-grid">${left}${middle}${right}</div></div>`;
   // load reviews area
   (async () => {
     try {
       const reviews = await getReviewsForUser(userToShow.id);
-      if (!reviews.length) return;
-      const container = document.createElement('div'); container.innerHTML = '<h4>Reviews</h4>';
+      const container = document.getElementById('profileReviews');
+      if (!container || !reviews.length) return;
+      container.innerHTML = `<div class="profile-label">Reviews</div><div class="reviews-summary">${starsHtml}<div>${reviews.length} Reviews</div></div>`;
+      const list = document.createElement('div');
+      list.className = 'review-list';
       reviews.slice().reverse().forEach(r => {
         const stars = '★'.repeat(Math.max(1, Math.min(5, Math.round(r.rating))));
-        const feedbackText = r.feedback ? `"${r.feedback}"` : '';
-        const card = document.createElement('div'); card.className = 'card';
-        card.innerHTML = `<div class="stars">${stars}</div><div style="margin-top:6px;"><strong>${r.reviewerName || 'Reviewer'}</strong> • ${new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt || Date.now())).toLocaleDateString()}</div><div style="margin-top:8px;">${feedbackText}</div>`;
-        container.appendChild(card);
+        const feedbackText = r.feedback ? `"${r.feedback}"` : 'No written feedback.';
+        const card = document.createElement('div'); card.className = 'card review-card';
+        card.innerHTML = `<div class="stars">${stars}</div><div class="review-meta"><strong>${r.reviewerName || 'Reviewer'}</strong><span>${new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt || Date.now())).toLocaleDateString()}</span></div><div class="review-feedback">${feedbackText}</div>`;
+        list.appendChild(card);
       });
-      profileContent.appendChild(container);
+      container.appendChild(list);
     } catch (err) { console.error('Failed to load reviews', err); }
   })();
 
@@ -1100,13 +1075,13 @@ async function initSessionsPage() {
         const savedKey = `review_${s.id}_${curr.id}`;
         if (localStorage.getItem(reviewedKey)) {
           const saved = JSON.parse(localStorage.getItem(savedKey) || '{}');
-          const savedHtml = document.createElement('div'); savedHtml.className = 'card';
+          const savedHtml = document.createElement('div'); savedHtml.className = 'card rating-card';
           const starsHtml = '★'.repeat(Math.max(1, Math.min(5, Math.round(saved.rating || 0))));
           const feedbackText = saved.feedback ? `"${saved.feedback}"` : '';
           savedHtml.innerHTML = `<div class="stars">${starsHtml}</div><div style="margin-top:6px;"><p>${feedbackText}</p></div>`;
           card.appendChild(savedHtml);
         } else {
-          const ratingContainer = document.createElement('div'); ratingContainer.className = 'card'; ratingContainer.innerHTML = `<div><strong>Rate ${otherName}</strong><div class="rating-stars" data-session="${s.id}"></div><textarea class="rating-feedback" placeholder="Optional feedback" rows="2" style="width:100%;margin-top:8px;border-radius:8px;padding:8px;background:rgba(0,0,0,0.05);color:#fff;border:1px solid rgba(255,255,255,0.06);"></textarea><div style="text-align:right;margin-top:8px;"><button class="btn submit-rating"><span class="btn-text">Submit Rating</span><span class="btn-spinner hidden" aria-hidden="true"></span></button></div></div>`;
+          const ratingContainer = document.createElement('div'); ratingContainer.className = 'card rating-card'; ratingContainer.innerHTML = `<div><strong>Rate ${otherName}</strong><div class="rating-stars" data-session="${s.id}"></div><textarea class="rating-feedback" placeholder="Optional feedback" rows="2"></textarea><div class="rating-actions"><button class="btn submit-rating"><span class="btn-text">Submit Rating</span><span class="btn-spinner hidden" aria-hidden="true"></span></button></div></div>`;
           card.appendChild(ratingContainer);
           const stars = ratingContainer.querySelector('.rating-stars');
           for (let i=1;i<=5;i++) {
@@ -1148,7 +1123,7 @@ async function initSessionsPage() {
                   const avgHtml = `<div class="stars">${'★'.repeat(avg)}</div><div style="margin-top:6px;">(${reviews.length} Reviews)</div>`;
                   reviewsPreview.appendChild((() => { const d=document.createElement('div'); d.innerHTML = avgHtml; return d; })());
                   const list = document.createElement('div');
-                  reviews.slice().reverse().slice(0,5).forEach(r => { const card = document.createElement('div'); card.className='card'; const starsHtml = '★'.repeat(Math.max(1, Math.min(5, Math.round(r.rating)))); const feedbackText = r.feedback ? `"${r.feedback}"` : ''; card.innerHTML = `<div class="stars">${starsHtml}</div><div style="margin-top:6px;"><strong>${r.reviewerName || 'Reviewer'}</strong> • ${new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt || Date.now())).toLocaleDateString()}</div><div style="margin-top:8px;">${feedbackText}</div>`; list.appendChild(card); });
+                  reviews.slice().reverse().slice(0,5).forEach(r => { const card = document.createElement('div'); card.className='card review-card'; const starsHtml = '★'.repeat(Math.max(1, Math.min(5, Math.round(r.rating)))); const feedbackText = r.feedback ? `"${r.feedback}"` : 'No written feedback.'; card.innerHTML = `<div class="stars">${starsHtml}</div><div class="review-meta"><strong>${r.reviewerName || 'Reviewer'}</strong><span>${new Date(r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt || Date.now())).toLocaleDateString()}</span></div><div class="review-feedback">${feedbackText}</div>`; list.appendChild(card); });
                   reviewsPreview.appendChild(list);
                 } catch (err) { console.error('Failed refresh reviews after rating', err); }
               }
