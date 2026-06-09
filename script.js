@@ -90,11 +90,9 @@ const AVAILABILITY_DAYS = ['Weekdays', 'Weekends'];
 const AVAILABILITY_TIMES = ['Morning (6-10 AM)', 'Afternoon (12-4 PM)', 'Evening (5-9 PM)'];
 
 function ratingToStars(r) {
-  const val = Number(r || 0);
-  if (val <= 2.4) return 2;
-  if (val <= 3.4) return 3;
-  if (val <= 4.4) return 4;
-  return 5;
+  // return an exact rounded rating clamped between 1 and 5
+  const val = Math.round(Number(r || 0));
+  return Math.max(1, Math.min(5, val));
 }
 
 function getModalContainer() {
@@ -187,19 +185,30 @@ async function openProfileModal(userId, contextType) {
     const grid = modalEl.querySelector('.profile-modal-grid');
     if (grid) {
       grid.style.display = 'grid';
-      grid.style.gridTemplateColumns = '1fr 1fr 1fr';
+      grid.style.gridTemplateColumns = 'minmax(220px, 320px) 1fr minmax(260px, 380px)';
       grid.style.gap = '18px';
       grid.style.alignItems = 'start';
+      grid.style.gridAutoFlow = 'column';
     }
-      // limit modal height and make reviews column scrollable independently
-      modalEl.style.maxHeight = '80vh';
-      modalEl.style.overflowY = 'hidden';
-      const reviewsCol = modalEl.querySelector('#reviewsPreview');
-      if (reviewsCol) {
-        reviewsCol.style.maxHeight = '64vh';
-        reviewsCol.style.overflowY = 'auto';
-        reviewsCol.style.paddingRight = '8px';
-      }
+    // limit modal height and keep columns from growing the modal
+    modalEl.style.maxHeight = '80vh';
+    modalEl.style.overflowY = 'hidden';
+    // ensure columns can scroll internally if their content is long
+    const leftCol = modalEl.querySelector('.profile-left');
+    const midCol = modalEl.querySelector('.profile-middle');
+    const rightCol = modalEl.querySelector('.profile-right');
+    [leftCol, midCol, rightCol].forEach(col => {
+      if (col) { col.style.maxHeight = '68vh'; col.style.overflowY = 'auto'; }
+    });
+    const reviewsCol = modalEl.querySelector('#reviewsPreview');
+    if (reviewsCol) {
+      reviewsCol.style.maxHeight = '64vh';
+      reviewsCol.style.overflowY = 'auto';
+      reviewsCol.style.paddingRight = '8px';
+      reviewsCol.style.display = 'flex';
+      reviewsCol.style.flexDirection = 'column';
+      reviewsCol.style.gap = '8px';
+    }
   }
   (async () => {
     try {
@@ -344,10 +353,15 @@ async function setupNotificationBell() {
   }
 
   let unsub = null;
+  // local dismissed set so dismissed notifications stay hidden for this session
+  const dismissed = new Set();
+
   function renderList(list) {
     const notifList = document.getElementById('notifList');
     if (!notifList) return;
     notifList.innerHTML = '';
+    // filter out locally dismissed notifications
+    list = (list || []).filter(n => n && !dismissed.has(n.id));
     if (!list.length) {
       notifList.innerHTML = '<p class="hint">No notifications</p>';
       dot?.classList.add('hidden');
@@ -362,7 +376,24 @@ async function setupNotificationBell() {
     const unread = list.filter(n => n.unread).length;
     if (dot) dot.classList.toggle('hidden', unread === 0);
     list.forEach(n => {
-      const card = document.createElement('div'); card.className = 'notif-card'; card.dataset.id = n.id;
+      const card = document.createElement('div'); card.className = 'notif-card'; card.dataset.id = n.id; card.style.position = 'relative';
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'notif-close';
+      closeBtn.innerHTML = '×';
+      closeBtn.title = 'Dismiss';
+      // small clean styling to match PeerBridge
+      closeBtn.style.position = 'absolute'; closeBtn.style.top = '8px'; closeBtn.style.right = '8px'; closeBtn.style.border = 'none'; closeBtn.style.background = 'transparent'; closeBtn.style.color = 'rgba(255,255,255,0.8)'; closeBtn.style.fontSize = '18px'; closeBtn.style.cursor = 'pointer'; closeBtn.style.padding = '2px 6px';
+      closeBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        dismissed.add(n.id);
+        const currentCard = document.querySelector(`.notif-card[data-id="${n.id}"]`);
+        if (currentCard) currentCard.remove();
+        const remaining = notifList.querySelectorAll('.notif-card').length;
+        if (!remaining) notifList.innerHTML = '<p class="hint">No notifications</p>';
+        if (dot && remaining === 0) dot.classList.add('hidden');
+      });
+
       const title = document.createElement('p');
       if (n.message) {
         title.innerHTML = `<strong>${n.message}</strong>`;
@@ -370,6 +401,7 @@ async function setupNotificationBell() {
         title.innerHTML = `<strong>${n.senderName || 'Someone'}</strong> requested help in <strong>${n.subject}</strong>`;
       }
       const meta = document.createElement('p'); meta.className = 'meta'; meta.textContent = `${n.date || ''} • ${n.time || ''}`;
+      card.appendChild(closeBtn);
       card.appendChild(title); card.appendChild(meta);
       const actions = document.createElement('div'); actions.className = 'notif-actions';
       const view = document.createElement('button'); view.className = 'btn'; view.innerHTML = '<span class="btn-text">View Profile</span><span class="btn-spinner hidden" aria-hidden="true"></span>';
@@ -1091,7 +1123,10 @@ async function initSessionsPage() {
             stars.appendChild(sEl);
           }
           ratingContainer.querySelector('.submit-rating')?.addEventListener('click', async (ev) => {
-            const btn = ev.currentTarget; const selected = +stars.querySelector('button.active')?.dataset.value; const feedback = ratingContainer.querySelector('.rating-feedback').value;
+            const btn = ev.currentTarget;
+            const activeNodes = Array.from(stars.querySelectorAll('button.active'));
+            const selected = activeNodes.length ? Number(activeNodes[activeNodes.length - 1].dataset.value) : 0;
+            const feedback = ratingContainer.querySelector('.rating-feedback').value;
             if (!selected) { showToast('Please select a rating'); return; }
             setButtonLoading(btn, 'Submitting...', true);
             try {
