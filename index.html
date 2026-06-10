@@ -4,58 +4,66 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PeerBridge | Velammal College of Engineering</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body data-page="home">
   <!-- Ambient background graphics -->
   <div class="hero-bg">
-    <div class="hero-network-left" aria-hidden="true">
-      <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="200" cy="200" r="120" stroke="rgba(213,184,147,0.12)" stroke-width="0.8"/>
-        <circle cx="200" cy="200" r="80" stroke="rgba(213,184,147,0.08)" stroke-width="0.6"/>
-        <circle cx="200" cy="200" r="160" stroke="rgba(96,165,250,0.06)" stroke-width="0.5" stroke-dasharray="8 6"/>
-        <line x1="120" y1="120" x2="280" y2="280" stroke="rgba(213,184,147,0.1)" stroke-width="0.5"/>
-        <line x1="280" y1="120" x2="120" y2="280" stroke="rgba(213,184,147,0.1)" stroke-width="0.5"/>
-        <line x1="200" y1="80" x2="200" y2="320" stroke="rgba(213,184,147,0.08)" stroke-width="0.4"/>
-        <line x1="80" y1="200" x2="320" y2="200" stroke="rgba(213,184,147,0.08)" stroke-width="0.4"/>
-        <circle cx="200" cy="200" r="4" fill="rgba(213,184,147,0.25)"/>
-        <circle cx="280" cy="120" r="2.5" fill="rgba(96,165,250,0.2)"/>
-        <circle cx="120" cy="280" r="2.5" fill="rgba(96,165,250,0.2)"/>
-        <circle cx="280" cy="280" r="2.5" fill="rgba(96,165,250,0.2)"/>
-        <circle cx="120" cy="120" r="2.5" fill="rgba(96,165,250,0.2)"/>
-        <circle cx="200" cy="80" r="2" fill="rgba(111,77,56,0.2)"/>
-        <circle cx="200" cy="320" r="2" fill="rgba(111,77,56,0.2)"/>
-        <circle cx="80" cy="200" r="2" fill="rgba(111,77,56,0.2)"/>
-        <circle cx="320" cy="200" r="2" fill="rgba(111,77,56,0.2)"/>
-        <circle cx="260" cy="150" r="1.5" fill="rgba(213,184,147,0.15)"/>
-        <circle cx="150" cy="260" r="1.5" fill="rgba(213,184,147,0.15)"/>
-        <circle cx="340" cy="100" r="1.5" fill="rgba(213,184,147,0.1)"/>
-        <line x1="200" y1="80" x2="280" y2="120" stroke="rgba(213,184,147,0.06)" stroke-width="0.4"/>
-        <line x1="200" y1="320" x2="120" y2="280" stroke="rgba(213,184,147,0.06)" stroke-width="0.4"/>
-        <line x1="80" y1="200" x2="120" y2="120" stroke="rgba(213,184,147,0.06)" stroke-width="0.4"/>
-        <line x1="320" y1="200" x2="280" y2="280" stroke="rgba(213,184,147,0.06)" stroke-width="0.4"/>
+    <div class="hero-particle-left" aria-hidden="true">
+      <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d5b893" stop-opacity="0.35"/><stop offset="100%" stop-color="#d5b893" stop-opacity="0"/></radialGradient>
+          <radialGradient id="glow2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#6f4d38" stop-opacity="0.3"/><stop offset="100%" stop-color="#6f4d38" stop-opacity="0"/></radialGradient>
+          <radialGradient id="cyanglow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#60a5fa" stop-opacity="0.25"/><stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/></radialGradient>
+          <filter id="softGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <circle cx="200" cy="250" r="40" fill="url(#glow1)" filter="url(#softGlow)"/>
+        <circle cx="350" cy="180" r="30" fill="url(#cyanglow)" filter="url(#softGlow)"/>
+        <circle cx="120" cy="300" r="25" fill="url(#glow2)" filter="url(#softGlow)"/>
+        <circle cx="280" cy="380" r="20" fill="url(#glow1)" filter="url(#softGlow)"/>
+        <circle cx="400" cy="300" r="22" fill="url(#cyanglow)" filter="url(#softGlow)"/>
+        <line x1="200" y1="250" x2="350" y2="180" stroke="rgba(213,184,147,0.2)" stroke-width="1.2"/>
+        <line x1="200" y1="250" x2="120" y2="300" stroke="rgba(213,184,147,0.15)" stroke-width="1"/>
+        <line x1="200" y1="250" x2="280" y2="380" stroke="rgba(213,184,147,0.15)" stroke-width="1"/>
+        <line x1="350" y1="180" x2="400" y2="300" stroke="rgba(96,165,250,0.12)" stroke-width="0.8"/>
+        <line x1="120" y1="300" x2="280" y2="380" stroke="rgba(111,77,56,0.1)" stroke-width="0.8"/>
+        <circle cx="200" cy="250" r="6" fill="#d5b893" opacity="0.4" filter="url(#softGlow)"/><circle cx="200" cy="250" r="2.5" fill="#fff" opacity="0.6"/>
+        <circle cx="350" cy="180" r="4" fill="#60a5fa" opacity="0.4" filter="url(#softGlow)"/><circle cx="350" cy="180" r="1.8" fill="#fff" opacity="0.5"/>
+        <circle cx="120" cy="300" r="3.5" fill="#d5b893" opacity="0.3" filter="url(#softGlow)"/><circle cx="120" cy="300" r="1.5" fill="#fff" opacity="0.4"/>
+        <circle cx="280" cy="380" r="3" fill="#d5b893" opacity="0.3" filter="url(#softGlow)"/>
+        <circle cx="400" cy="300" r="3" fill="#60a5fa" opacity="0.3" filter="url(#softGlow)"/>
+        <circle cx="160" cy="200" r="1.5" fill="#d5b893" opacity="0.25" class="particle-1"/>
+        <circle cx="300" cy="140" r="1.2" fill="#60a5fa" opacity="0.2" class="particle-2"/>
+        <circle cx="250" cy="420" r="1.3" fill="#d5b893" opacity="0.2" class="particle-3"/>
+        <circle cx="440" cy="250" r="1" fill="#60a5fa" opacity="0.2" class="particle-4"/>
+        <circle cx="80" cy="200" r="1" fill="#d5b893" opacity="0.2" class="particle-5"/>
       </svg>
     </div>
-    <div class="hero-satellite-right" aria-hidden="true">
-      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="100" cy="180" rx="20" ry="6" stroke="rgba(213,184,147,0.1)" stroke-width="0.5"/>
-        <rect x="92" y="100" width="16" height="16" rx="2" stroke="rgba(213,184,147,0.15)" stroke-width="0.6" fill="rgba(213,184,147,0.03)"/>
-        <line x1="100" y1="116" x2="100" y2="140" stroke="rgba(213,184,147,0.12)" stroke-width="0.5"/>
-        <line x1="100" y1="140" x2="80" y2="180" stroke="rgba(213,184,147,0.08)" stroke-width="0.4"/>
-        <line x1="100" y1="140" x2="120" y2="180" stroke="rgba(213,184,147,0.08)" stroke-width="0.4"/>
-        <circle cx="100" cy="100" r="4" fill="rgba(96,165,250,0.15)"/>
-        <circle cx="110" cy="95" r="2" fill="rgba(213,184,147,0.08)"/>
-        <circle cx="90" cy="105" r="2" fill="rgba(213,184,147,0.08)"/>
-        <line x1="100" y1="60" x2="100" y2="90" stroke="rgba(96,165,250,0.08)" stroke-width="0.4" stroke-dasharray="3 4"/>
-        <circle cx="100" cy="55" r="3" fill="rgba(96,165,250,0.08)"/>
-        <line x1="80" y1="100" x2="70" y2="95" stroke="rgba(213,184,147,0.06)" stroke-width="0.3"/>
-        <line x1="120" y1="100" x2="130" y2="95" stroke="rgba(213,184,147,0.06)" stroke-width="0.3"/>
-        <line x1="70" y1="95" x2="60" y2="100" stroke="rgba(213,184,147,0.06)" stroke-width="0.3"/>
-        <line x1="130" y1="95" x2="140" y2="100" stroke="rgba(213,184,147,0.06)" stroke-width="0.3"/>
+    <div class="hero-tech-right" aria-hidden="true">
+      <svg viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="techglow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d5b893" stop-opacity="0.12"/><stop offset="60%" stop-color="#d5b893" stop-opacity="0.03"/><stop offset="100%" stop-color="#d5b893" stop-opacity="0"/></radialGradient>
+          <linearGradient id="conic" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d5b893" stop-opacity="0.25"/><stop offset="50%" stop-color="#60a5fa" stop-opacity="0.15"/><stop offset="100%" stop-color="#6f4d38" stop-opacity="0.2"/></linearGradient>
+          <filter id="glowFilter"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+        <circle cx="140" cy="140" r="110" fill="url(#techglow)"/>
+        <circle cx="140" cy="140" r="95" stroke="url(#conic)" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="140" cy="140" r="75" stroke="rgba(213,184,147,0.15)" stroke-width="0.8" stroke-dasharray="6 8"/>
+        <circle cx="140" cy="140" r="55" stroke="rgba(96,165,250,0.12)" stroke-width="0.6" stroke-dasharray="4 6"/>
+        <circle cx="140" cy="140" r="35" stroke="rgba(213,184,147,0.1)" stroke-width="0.5"/>
+        <path d="M140 45 A95 95 0 0 1 220 80" stroke="rgba(213,184,147,0.2)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M140 35 A105 105 0 0 1 235 75" stroke="rgba(96,165,250,0.12)" stroke-width="1" stroke-linecap="round" fill="none" stroke-dasharray="3 5"/>
+        <circle cx="140" cy="140" r="8" fill="rgba(213,184,147,0.2)" filter="url(#glowFilter)"/>
+        <circle cx="140" cy="140" r="3" fill="#d5b893" opacity="0.5"/>
+        <circle cx="140" cy="45" r="2.5" fill="#d5b893" opacity="0.35" class="orbit-dot-1"/>
+        <circle cx="215" cy="100" r="2" fill="#60a5fa" opacity="0.3" class="orbit-dot-2"/>
+        <circle cx="215" cy="180" r="2" fill="#d5b893" opacity="0.25" class="orbit-dot-3"/>
+        <circle cx="140" cy="235" r="2" fill="#60a5fa" opacity="0.2" class="orbit-dot-4"/>
+        <circle cx="65" cy="180" r="1.5" fill="#6f4d38" opacity="0.2" class="orbit-dot-5"/>
       </svg>
     </div>
   </div>
@@ -92,7 +100,6 @@
             </div>
             <div id="emailError" class="field-error" aria-live="polite"></div>
           </div>
-
           <div class="field">
             <div class="password-wrapper">
               <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -104,18 +111,18 @@
             </div>
             <div id="capsWarning" class="field-warning" aria-live="polite"></div>
           </div>
-
           <div class="form-actions">
             <button type="submit" id="signInButton" class="btn primary">
               <span class="btn-text">Sign In</span>
               <span class="btn-spinner hidden" aria-hidden="true"></span>
             </button>
           </div>
-
           <div id="loginError" class="form-error" role="alert" aria-live="assertive"></div>
         </form>
       </div>
     </section>
+
+    <!-- Features -->
     <section class="features">
       <div class="feature-card">
         <h3>Smart Matching</h3>
@@ -130,10 +137,161 @@
         <p>Students rate sessions to build a trusted learning network.</p>
       </div>
     </section>
+
+    <!-- Statistics -->
+    <section class="stats-section" id="statsSection">
+      <div class="stats-container card">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" data-target="0" id="statStudents">0</div>
+            <div class="stat-label">Students Registered</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" data-target="0" id="statSessions">0</div>
+            <div class="stat-label">Sessions Completed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" data-target="0" id="statRating">0</div>
+            <div class="stat-label">Average Rating</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" data-target="8" id="statSubjects">8</div>
+            <div class="stat-label">Subjects Available</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="how-section">
+      <h2 class="section-title">How PeerBridge Works</h2>
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-step">1</div>
+          <h3>Create Your Profile</h3>
+          <p>Create your academic profile, add your strengths, learning interests, availability, and location.</p>
+        </div>
+        <div class="how-connector" aria-hidden="true">
+          <svg viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 6l6 6-6 6" stroke="rgba(213,184,147,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="how-card">
+          <div class="how-step">2</div>
+          <h3>Discover Students</h3>
+          <p>Find peers who can help you learn or students who need help in subjects you understand.</p>
+        </div>
+        <div class="how-connector" aria-hidden="true">
+          <svg viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 6l6 6-6 6" stroke="rgba(213,184,147,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="how-card">
+          <div class="how-step">3</div>
+          <h3>Schedule Sessions</h3>
+          <p>Choose available slots and request learning sessions that fit both students' schedules.</p>
+        </div>
+        <div class="how-connector" aria-hidden="true">
+          <svg viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 6l6 6-6 6" stroke="rgba(213,184,147,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="how-card">
+          <div class="how-step">4</div>
+          <h3>Learn, Teach & Grow</h3>
+          <p>Share knowledge, improve skills, build confidence, and help strengthen the learning community.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="about-section">
+      <h2 class="section-title">About PeerBridge</h2>
+      <div class="about-content card">
+        <p>PeerBridge is a student-driven peer learning platform designed to connect learners and mentors within the same academic community.</p>
+        <p>The platform helps students discover peers who excel in specific subjects, schedule learning sessions, exchange knowledge, and build meaningful academic connections.</p>
+        <p class="about-highlight">PeerBridge was created with a simple vision: <em>Learning becomes easier when students support students.</em></p>
+        <p>By combining subject-based matching, flexible scheduling, peer reviews, and community-driven collaboration, PeerBridge creates an environment where students can learn together, grow together, and succeed together.</p>
+        <p>Whether a student needs help understanding difficult concepts or wants to share knowledge with others, PeerBridge provides a structured and trusted space for academic collaboration.</p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>What is PeerBridge?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>PeerBridge is a peer-to-peer learning platform that connects students who want to learn with students who are willing to teach and share knowledge.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>Who can use PeerBridge?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Any student within the academic community can use PeerBridge to learn, teach, schedule sessions, and collaborate with peers.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>How are tutors selected?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Students are matched based on subjects, ratings, availability, and location preferences, helping learners find the most suitable peer mentors.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>Can I be both a learner and a tutor?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes. Students can seek help in subjects they are learning while also helping others in subjects they are confident in.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>How does session scheduling work?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Sessions can only be requested during the availability selected by the tutor. The platform automatically prevents scheduling conflicts and double bookings.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>How are ratings calculated?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Ratings are submitted after completed sessions and help maintain a trusted learning environment for all users.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>Is PeerBridge free?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes. PeerBridge is designed as an educational collaboration platform that encourages students to help one another learn and grow.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span>What happens after a session is completed?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Both participants can leave ratings and feedback, helping improve the quality and reliability of the community.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
-    PeerBridge © 2026 | Velammal College of Engineering and Technology
+    PeerBridge &copy; 2026 | Velammal College of Engineering and Technology
   </footer>
 
   <script type="module" src="script.js"></script>

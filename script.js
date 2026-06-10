@@ -1646,6 +1646,98 @@ function logout() {
 setActiveNav();
 logout();
 
+// FAQ accordion (landing page)
+function initFAQ() {
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      // Close all others
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+}
+
+// Stats count-up animation
+function initStats() {
+  const statsEl = document.getElementById('statsSection');
+  if (!statsEl) return;
+
+  async function loadStats() {
+    try {
+      const allUsers = await getAllUsers();
+      const allSessions = await getAllSessions();
+      const completed = allSessions.filter(s => (s.status || '').toLowerCase() === 'completed');
+
+      // Average rating
+      const ratedUsers = allUsers.filter(u => (u.totalRatings || 0) > 0);
+      let avgRating = 0;
+      if (ratedUsers.length) {
+        const totalR = ratedUsers.reduce((sum, u) => sum + (u.rating || 0), 0);
+        avgRating = (totalR / ratedUsers.length).toFixed(1);
+      }
+
+      const targets = {
+        statStudents: allUsers.length,
+        statSessions: completed.length,
+        statRating: avgRating,
+        statSubjects: 8
+      };
+
+      // Animate count-up
+      Object.entries(targets).forEach(([id, target]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const numTarget = parseFloat(target);
+        if (isNaN(numTarget) || numTarget === 0) { el.textContent = target; return; }
+        const isFloat = String(target).includes('.');
+        const duration = 1200;
+        const startTime = performance.now();
+
+        function animate(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Ease out cubic
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = eased * numTarget;
+          el.textContent = isFloat ? current.toFixed(1) : Math.round(current);
+          if (progress < 1) requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+      });
+    } catch (e) { console.warn('Stats load error', e); }
+  }
+
+  // Use IntersectionObserver to trigger when visible
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadStats();
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.2 });
+  observer.observe(statsEl);
+}
+
+// Subtle background for inner pages
+function initPageBackground() {
+  if (page === 'home') return; // Landing page has its own hero-bg
+  const bg = document.createElement('div');
+  bg.className = 'hero-bg';
+  bg.setAttribute('aria-hidden', 'true');
+  bg.innerHTML = '<div class="hero-particle-left" style="opacity:0.3;width:300px;height:300px;left:-80px;bottom:-60px;" aria-hidden="true"><svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pg1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d5b893" stop-opacity="0.2"/><stop offset="100%" stop-color="#d5b893" stop-opacity="0"/></radialGradient><filter id="pgf"><feGaussianBlur stdDeviation="3"/></filter></defs><circle cx="250" cy="250" r="30" fill="url(#pg1)" filter="url(#pgf)"/><circle cx="180" cy="200" r="18" fill="url(#pg1)" filter="url(#pgf)"/><circle cx="320" cy="300" r="15" fill="url(#pg1)" filter="url(#pgf)"/><line x1="250" y1="250" x2="180" y2="200" stroke="rgba(213,184,147,0.08)" stroke-width="0.8"/><line x1="250" y1="250" x2="320" y2="300" stroke="rgba(213,184,147,0.06)" stroke-width="0.6"/><circle cx="250" cy="250" r="2" fill="#d5b893" opacity="0.2"/><circle cx="180" cy="200" r="1.5" fill="#d5b893" opacity="0.15"/></svg></div><div class="hero-tech-right" style="opacity:0.25;width:160px;height:160px;right:-40px;top:120px;" aria-hidden="true"><svg viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="tg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d5b893" stop-opacity="0.1"/><stop offset="100%" stop-color="#d5b893" stop-opacity="0"/></radialGradient></defs><circle cx="140" cy="140" r="80" fill="url(#tg2)"/><circle cx="140" cy="140" r="60" stroke="rgba(213,184,147,0.08)" stroke-width="0.5" stroke-dasharray="5 7"/><circle cx="140" cy="140" r="40" stroke="rgba(96,165,250,0.06)" stroke-width="0.4"/><circle cx="140" cy="140" r="2" fill="#d5b893" opacity="0.15"/></svg></div>';
+  document.body.insertBefore(bg, document.body.firstChild);
+}
+
+setActiveNav();
+logout();
+
+initFAQ();
+initStats();
+initPageBackground();
+
 if (page === 'home') initHomePage();
 if (page === 'register') initRegisterPage();
 if (page === 'student' || page === 'tutor') initDashboardPage();

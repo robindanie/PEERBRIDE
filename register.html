@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register | PeerBridge</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -20,64 +21,96 @@
     </nav>
   </header>
 
-  <main class="container">
-    <section class="card form-card">
-      <h1>Create your PeerBridge account</h1>
-      <form id="registrationForm" class="grid-form">
-        <label>Full Name<input name="name" required /></label>
-        <label>Date of Birth<input type="date" name="dob" required /></label>
-        <label>Gender
-          <select name="gender" required>
-            <option value="">Select</option>
-            <option>Female</option>
-            <option>Male</option>
-            <option>Other</option>
-          </select>
-        </label>
-        <label>Email<input type="email" name="email" required /></label>
-        <label>Phone Number<input type="tel" name="phone" required /></label>
+  <main class="container" style="max-width:960px;padding-bottom:2rem;">
+    <div class="form-card">
+      <h2 style="color:var(--tan);text-align:center;margin-bottom:0.25rem;">Create Your Account</h2>
+      <p class="subtitle" style="text-align:center;">Join the PeerBridge learning community</p>
 
-        <h2 class="full">Address</h2>
-        <label>Door Number<input name="doorNumber" required /></label>
-        <label>Street / Area<input name="street" required /></label>
-        <label>Region / Locality<input name="region" required /></label>
-        <label>City<input name="city" value="Madurai" required /></label>
-        <label>State<input name="state" value="Tamil Nadu" required /></label>
-        <label>Postal Code<input name="postalCode" required /></label>
+      <form id="registrationForm" novalidate>
+        <!-- Personal Info -->
+        <div class="card" style="padding:1.5rem;margin-bottom:0.85rem;">
+          <h3 style="margin:0 0 1rem;color:var(--tan);font-size:0.95rem;font-weight:700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;opacity:0.7;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Personal Information
+          </h3>
+          <div class="grid-form" style="margin-top:0;">
+            <label>Full Name<input name="name" required placeholder="e.g. John Doe" /></label>
+            <label>Date of Birth<input name="dob" type="date" required /></label>
+            <label>Gender<select name="gender" required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></label>
+            <label>Email<input name="email" type="email" required placeholder="you@college.edu" /></label>
+            <label>Phone<input name="phone" type="tel" placeholder="10-digit mobile" /></label>
+            <label>Bio<textarea name="bio" rows="2" placeholder="Tell us about yourself..."></textarea></label>
+          </div>
+        </div>
 
-        <h2 class="full">Account Security</h2>
-        <label>Password<input type="password" name="password" required minlength="6" /></label>
-        <label>Confirm Password<input type="password" name="confirmPassword" required minlength="6" /></label>
+        <!-- Address -->
+        <div class="card" style="padding:1.5rem;margin-bottom:0.85rem;">
+          <h3 style="margin:0 0 1rem;color:var(--tan);font-size:0.95rem;font-weight:700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;opacity:0.7;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            Address & Location
+          </h3>
+          <div class="grid-form" style="margin-top:0;">
+            <label>Door Number<input name="doorNumber" placeholder="e.g. 42" /></label>
+            <label>Street / Area<input name="street" placeholder="e.g. MG Road" /></label>
+            <label>City<input name="city" value="Madurai" /></label>
+            <label>State<input name="state" value="Tamil Nadu" /></label>
+            <label>Postal Code<input name="postalCode" placeholder="e.g. 625001" /></label>
+            <label>Region / Locality<input name="region" placeholder="e.g. Madurai" /></label>
+          </div>
+        </div>
 
-        <h2 class="full">Academic Information</h2>
-        <label>Strong Subjects
-          <div id="strongSubjectChips" class="chip-container"></div>
-          <small class="hint">Tap to select your strong subjects</small>
-        </label>
-        <label>Weak Subjects
+        <!-- Subjects -->
+        <div class="card" style="padding:1.5rem;margin-bottom:0.85rem;">
+          <h3 style="margin:0 0 1rem;color:var(--tan);font-size:0.95rem;font-weight:700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;opacity:0.7;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            Academic Subjects
+          </h3>
+          <label style="margin-bottom:0.5rem;">Subjects you are strong in (can teach others)</label>
+          <div id="strongSubjectChips" class="chip-container" style="margin-bottom:1rem;"></div>
+          <label style="margin-bottom:0.5rem;">Subjects you want to learn</label>
           <div id="weakSubjectChips" class="chip-container"></div>
-          <small class="hint">Tap to select subjects you need tutoring in</small>
-        </label>
+        </div>
 
-        <h2 class="full">Availability</h2>
-        <label>Days
-          <div id="availabilityDaysChips" class="chip-container"></div>
-          <small class="hint">Choose one or more days</small>
-        </label>
-        <label>Time
+        <!-- Availability -->
+        <div class="card" style="padding:1.5rem;margin-bottom:0.85rem;">
+          <h3 style="margin:0 0 1rem;color:var(--tan);font-size:0.95rem;font-weight:700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;opacity:0.7;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Availability
+          </h3>
+          <label style="margin-bottom:0.5rem;">Days you are available</label>
+          <div id="availabilityDaysChips" class="chip-container" style="margin-bottom:1rem;"></div>
+          <label style="margin-bottom:0.5rem;">Preferred time slots</label>
           <div id="availabilityTimeChips" class="chip-container"></div>
-          <small class="hint">Choose one or more time slots</small>
-        </label>
+        </div>
 
-        <label class="full">Bio (optional)
-          <textarea name="bio" rows="4" placeholder="Share your learning goals and tutoring strengths."></textarea>
-        </label>
+        <!-- Password -->
+        <div class="card" style="padding:1.5rem;margin-bottom:1.25rem;">
+          <h3 style="margin:0 0 1rem;color:var(--tan);font-size:0.95rem;font-weight:700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;opacity:0.7;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Security
+          </h3>
+          <div class="grid-form" style="margin-top:0;">
+            <label>Password<input name="password" type="password" required minlength="6" placeholder="Min. 6 characters" /></label>
+            <label>Confirm Password<input name="confirmPassword" type="password" required placeholder="Re-enter password" /></label>
+          </div>
+        </div>
 
-        <button type="submit" class="btn full">Create Account</button>
+        <div id="registerMessage" style="color:var(--tan);text-align:center;margin-bottom:1rem;min-height:1.2em;font-weight:600;"></div>
+
+        <div class="form-actions">
+          <a href="index.html" class="btn secondary" style="margin-right:0.75rem;">Cancel</a>
+          <button type="submit" class="btn primary">
+            <span class="btn-text">Create Account</span>
+            <span class="btn-spinner hidden" aria-hidden="true"></span>
+          </button>
+        </div>
       </form>
-      <p id="registerMessage" class="message"></p>
-    </section>
+    </div>
   </main>
+
+  <footer class="footer">
+    PeerBridge &copy; 2026 | Velammal College of Engineering and Technology
+  </footer>
 
   <script type="module" src="script.js"></script>
   <div id="modalContainer" class="modal-container hidden" aria-hidden="true"></div>
