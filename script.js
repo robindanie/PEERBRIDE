@@ -36,6 +36,24 @@ const SUBJECTS = [
 const page = document.body.dataset.page;
 const AUTH_KEY = 'peerbridgeCurrentUser';
 
+// Global subject pool loaded from all Firebase users
+let GLOBAL_SUBJECTS_CACHE = null;
+async function loadGlobalSubjects() {
+  if (GLOBAL_SUBJECTS_CACHE) return GLOBAL_SUBJECTS_CACHE;
+  try {
+    const allUsers = await getAllUsers();
+    const allSubjects = new Set(SUBJECTS);
+    allUsers.forEach(u => {
+      (u.strongSubjects || []).forEach(s => allSubjects.add(s));
+      (u.weakSubjects || []).forEach(s => allSubjects.add(s));
+    });
+    GLOBAL_SUBJECTS_CACHE = [...allSubjects].sort();
+  } catch (e) {
+    GLOBAL_SUBJECTS_CACHE = [...SUBJECTS];
+  }
+  return GLOBAL_SUBJECTS_CACHE;
+}
+
 function setActiveNav() {
   document.querySelectorAll('nav a').forEach((a) => {
     const href = a.getAttribute('href');
@@ -847,12 +865,13 @@ async function initRegisterPage() {
         inputWrap.style.position = 'relative';
         inputWrap.appendChild(suggestionsEl);
 
-        function updateSuggestions() {
+        async function updateSuggestions() {
           const val = input.value.trim().toLowerCase();
           suggestionsEl.innerHTML = '';
           if (!val || val.length < 1) { suggestionsEl.classList.remove('open'); return; }
           // FIX: Search all items including global subjects
-          const allSubjects = items.concat(selectedArray.filter(s => !items.includes(s)));
+          const globalSubjects = await loadGlobalSubjects();
+          const allSubjects = [...new Set([...items, ...globalSubjects, ...selectedArray])];
           const matches = allSubjects.filter(s => s.toLowerCase().includes(val) && !selectedArray.includes(s));
           if (!matches.length) { suggestionsEl.classList.remove('open'); return; }
           matches.forEach(m => {
@@ -1307,11 +1326,12 @@ async function openEditProfileModal(targetUser) {
         inputWrap.style.position = 'relative';
         inputWrap.appendChild(suggestionsEl);
 
-        function updateSuggestions() {
+        async function updateSuggestions() {
           const val = input.value.trim().toLowerCase();
           suggestionsEl.innerHTML = '';
           if (!val || val.length < 1) { suggestionsEl.classList.remove('open'); return; }
-          const allSubjects = [...new Set([...items, ...selectedArray])];
+          const globalSubjects = await loadGlobalSubjects();
+          const allSubjects = [...new Set([...items, ...globalSubjects, ...selectedArray])];
           const matches = allSubjects.filter(s => s.toLowerCase().includes(val) && !selectedArray.includes(s));
           if (!matches.length) { suggestionsEl.classList.remove('open'); return; }
           matches.forEach(m => {
