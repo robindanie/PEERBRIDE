@@ -1,5 +1,6 @@
 ﻿import {
   registerUser,
+  updateUser,
   createSessionRequest,
   acceptSessionRequest,
   rejectSessionRequest,
@@ -207,6 +208,19 @@ async function openProfileModal(userId, contextType) {
   try { window.openProfileModal = openProfileModal; } catch (e) { /* ignore in restricted contexts */ }
 }
 
+// Check if a tutor is already booked for a given date and time slot
+async function checkDoubleBooking(tutorId, date, time, excludeSessionId) {
+  const allSessions = await getAllSessions();
+  return allSessions.some(s => {
+    if (excludeSessionId && s.id === excludeSessionId) return false;
+    const st = (s.status || '').toLowerCase();
+    return s.tutorID === tutorId &&
+           s.date === date &&
+           s.time === time &&
+           (st === 'accepted' || st === 'pending');
+  });
+}
+
 async function openSessionModal(targetUserId, mode) {
   const modalContainer = getModalContainer();
   if (!modalContainer) return;
@@ -218,9 +232,49 @@ async function openSessionModal(targetUserId, mode) {
   if (mode === 'request') common = (target.strongSubjects || []).filter(s => (curr.weakSubjects || []).includes(s));
   else common = (curr.strongSubjects || []).filter(s => (target.weakSubjects || []).includes(s));
   if (!common.length) { showToast('No subjects in common to schedule a session.'); return; }
+
+  // Load target user's availability for intelligent filtering
+  const availDays = (target.availabilityDays || []).map(d => d.trim().toLowerCase());
+  const availTimes = (target.availabilityTime || []).map(t => t.trim().toLowerCase());
+
+  // Determine which day types are allowed
+  const allowWeekdays = availDays.includes('weekdays');
+  const allowWeekends = availDays.includes('weekends');
+  // If both or neither, all days allowed (default to all)
+  const restrictDays = (allowWeekdays !== allowWeekends);
+
+  // Map stored time labels to slot keys
+  const allowedSlots = [];
+  if (availTimes.some(t => t.includes('morning'))) allowedSlots.push('Morning');
+  if (availTimes.some(t => t.includes('afternoon'))) allowedSlots.push('Afternoon');
+  if (availTimes.some(t => t.includes('evening'))) allowedSlots.push('Evening');
+  // If no availability times stored, allow all slots
+  const hasTimeRestrictions = allowedSlots.length > 0 && allowedSlots.length < 3;
+
   const subjectOptions = common.map(s => `<option value="${s}">${s}</option>`).join('');
   const title = mode === 'request' ? 'Request a Learning Session' : 'Offer Learning Support';
-  const body = `<div class="session-dialog"><h3>${title}</h3><div class="card session-form-card"><label>Subject<select id="sessionSubject">${subjectOptions}</select></label><label>Session Date<input id="sessionDate" type="date" /></label><div id="timeSlots" class="time-slots"><button type="button" class="btn time-slot" data-slot="Morning">🌅 Morning</button><button type="button" class="btn time-slot" data-slot="Afternoon">☀️ Afternoon</button><button type="button" class="btn time-slot" data-slot="Evening">🌙 Evening</button></div></div><div class="actions"><button id="cancelSessionBtn" class="btn secondary">Cancel</button><button id="sendSessionBtn" class="btn"><span class="btn-text">Send ${mode==='request'?'Request':'Offer'}</span><span class="btn-spinner hidden" aria-hidden="true"></span></button></div></div>`;
+
+  // Build time slot buttons with disabled state based on availability
+  const allSlots = [
+    { key: 'Morning', label: '🌅 Morning' },
+    { key: 'Afternoon', label: '☀️ Afternoon' },
+    { key: 'Evening', label: '🌙 Evening' }
+  ];
+  const slotButtons = allSlots.map(slot => {
+    const disabled = hasTimeRestrictions && !allowedSlots.includes(slot.key);
+    return `<button type="button" class="btn time-slot" data-slot="${slot.key}" ${disabled ? 'disabled' : ''}>${slot.label}</button>`;
+  }).join('');
+
+  // Build availability hint
+  let availHint = '';
+  const targetName = target.name || 'This user';
+  let availDaysHuman = 'All Days';
+  if (restrictDays) {
+    availDaysHuman = allowWeekdays ? 'Weekdays' : 'Weekends';
+  }
+  const availTimesHuman = allowedSlots.length > 0 ? allowedSlots.join(', ') : 'Any';
+
+  const body = `<div class="session-dialog"><h3>${title}</h3><div class="card session-form-card"><label>Subject<select id="sessionSubject">${subjectOptions}</select></label><label>Session Date<input id="sessionDate" type="date" min="${new Date().toISOString().split('T')[0]}" /><span class="avail-hint" style="font-size:0.82rem;color:rgba(226,232,240,0.8);margin-top:2px;">${targetName} is available on: ${availDaysHuman}</span></label><div id="timeSlots" class="time-slots">${slotButtons}</div><span class="avail-hint" style="font-size:0.82rem;color:rgba(226,232,240,0.8);margin-top:-8px;">${hasTimeRestrictions ? `Available slots: ${availTimesHuman}` : ''}</span></div><div class="actions"><button id="cancelSessionBtn" class="btn secondary">Cancel</button><button id="sendSessionBtn" class="btn"><span class="btn-text">Send ${mode==='request'?'Request':'Offer'}</span><span class="btn-spinner hidden" aria-hidden="true"></span></button></div></div>`;
   openModal(body);
   const modalEl2 = modalContainer.querySelector('.modal');
   if (modalEl2) {
@@ -237,7 +291,46 @@ async function openSessionModal(targetUserId, mode) {
     labelEl.style.cssText = 'font-size:0.93rem;font-weight:600;display:grid;gap:0.4rem;';
     timeSlotsEl.parentNode.insertBefore(labelEl, timeSlotsEl);
   }
-  modalContainer.querySelectorAll('.time-slot').forEach(btn => btn.addEventListener('click', (e) => {
+
+  // Apply disabled styling to unavailable time slots
+  modalContainer.querySelectorAll('.time-slot[disabled]').forEach(btn => {
+    btn.style.opacity = '0.35';
+    btn.style.cursor = 'not-allowed';
+    btn.style.pointerEvents = 'none';
+  });
+
+  // Add availability-aware date validation
+  const dateInput = modalContainer.querySelector('#sessionDate');
+  if (dateInput && restrictDays) {
+    dateInput.addEventListener('input', function validateDate() {
+      if (!this.value) return;
+      const day = new Date(this.value + 'T12:00:00').getDay(); // 0=Sun, 6=Sat
+      const isWeekend = (day === 0 || day === 6);
+      const isValidDay = (allowWeekdays && !isWeekend) || (allowWeekends && isWeekend);
+      if (!isValidDay) {
+        this.setCustomValidity('This date doesn\'t match the user\'s availability.');
+        this.style.borderColor = '#ef4444';
+        // Show a hint
+        const hint = document.querySelector('.date-avail-hint') || (() => {
+          const h = document.createElement('p');
+          h.className = 'date-avail-hint';
+          h.style.cssText = 'color:#ef4444;font-size:0.82rem;margin-top:4px;';
+          this.parentNode.appendChild(h);
+          return h;
+        })();
+        hint.textContent = `The user is only available on ${allowWeekdays ? 'Weekdays' : 'Weekends'}. Please select a valid date.`;
+        if (sendBtn) sendBtn.disabled = true;
+      } else {
+        this.setCustomValidity('');
+        this.style.borderColor = '';
+        const hint = document.querySelector('.date-avail-hint');
+        if (hint) hint.textContent = '';
+        if (sendBtn && selectedSlot) sendBtn.disabled = false;
+      }
+    });
+  }
+
+  modalContainer.querySelectorAll('.time-slot:not([disabled])').forEach(btn => btn.addEventListener('click', (e) => {
     modalContainer.querySelectorAll('.time-slot').forEach(b => {
       b.classList.remove('active');
     });
@@ -267,6 +360,13 @@ async function openSessionModal(targetUserId, mode) {
         }
         showToast('You already have a request for this subject.');
         closeModal();
+        return;
+      }
+      // Double booking check: ensure tutor doesn't already have a session at this date+time
+      const doubleBooked = await checkDoubleBooking(tutorId, date, time);
+      if (doubleBooked) {
+        if (sendBtn) { sendBtn.disabled = false; if (sendBtnSpinner) sendBtnSpinner.classList.add('hidden'); if (sendBtnText) sendBtnText.textContent = 'Send Request'; }
+        showToast('This tutor is already booked for the selected date and time.');
         return;
       }
       if (sendBtn) { sendBtn.disabled = true; if (sendBtnSpinner) sendBtnSpinner.classList.remove('hidden'); if (sendBtnText) sendBtnText.textContent = 'Sending...'; }
@@ -904,10 +1004,118 @@ async function initDashboardPage() {
   if (findBtn) findBtn.addEventListener('click', (e) => { e.preventDefault(); showTutors(); });
   if (helpBtn) helpBtn.addEventListener('click', (e) => { e.preventDefault(); showStudents(); });
 
+  // Add search and filter controls (hidden until mode selected)
+  let allMatchesCache = [];
+  let currentMode = null; // 'tutors' or 'students'
+
+  function renderFilteredCards() {
+    if (!resultsContainer || !allMatchesCache.length) {
+      if (resultsContainer && currentMode) {
+        resultsContainer.innerHTML = `<p class="hint">No ${currentMode === 'tutors' ? 'tutors' : 'students'} found matching your criteria.</p>`;
+      }
+      return;
+    }
+
+    const searchVal = (document.getElementById('communitySearch')?.value || '').toLowerCase().trim();
+    const subjectFilter = document.getElementById('subjectFilter')?.value || 'all';
+    const regionFilter = (document.getElementById('regionFilter')?.value || '').toLowerCase().trim();
+    const sortBy = document.getElementById('sortBy')?.value || 'rating';
+
+    let filtered = allMatchesCache.filter(p => {
+      if (searchVal) {
+        const nameMatch = (p.name || '').toLowerCase().includes(searchVal);
+        const strongMatch = (p.strongSubjects || []).some(s => s.toLowerCase().includes(searchVal));
+        const weakMatch = (p.weakSubjects || []).some(s => s.toLowerCase().includes(searchVal));
+        const regionMatch = (p.region || '').toLowerCase().includes(searchVal);
+        if (!nameMatch && !strongMatch && !weakMatch && !regionMatch) return false;
+      }
+      if (subjectFilter !== 'all') {
+        const allSubjects = [...(p.strongSubjects || []), ...(p.weakSubjects || [])];
+        if (!allSubjects.some(s => s.toLowerCase() === subjectFilter.toLowerCase())) return false;
+      }
+      if (regionFilter) {
+        if (!(p.region || '').toLowerCase().includes(regionFilter)) return false;
+      }
+      return true;
+    });
+
+    // Sort
+    if (sortBy === 'rating') filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    else if (sortBy === 'reviews') filtered.sort((a, b) => (b.totalRatings || 0) - (a.totalRatings || 0));
+    else if (sortBy === 'name-asc') filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    else if (sortBy === 'name-desc') filtered.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+
+    const cards = filtered.map(p => {
+      const cardType = currentMode === 'tutors' ? 'tutor' : 'student';
+      const cardFn = cardType === 'tutor' ? renderTutorCard : renderStudentCard;
+      return cardFn(p);
+    }).join('');
+
+    resultsContainer.classList.add('community-grid');
+    resultsContainer.innerHTML = cards || `<p class="hint">No ${currentMode === 'tutors' ? 'tutors' : 'students'} match your filters.</p>`;
+  }
+
+  // Build context-aware search/filter UI (shown when mode is selected)
+  function buildFilterUI(mode) {
+    // Remove existing filter if present
+    const existing = document.querySelector('.community-filters');
+    if (existing) existing.remove();
+
+    const filterDiv = document.createElement('div');
+    filterDiv.className = 'community-filters card';
+    filterDiv.style.cssText = 'padding:1rem;margin-bottom:1rem;';
+
+    // Dynamic subject options based on mode
+    let subjectOptions = '<option value="all">All Subjects</option>';
+    if (mode === 'tutors') {
+      (user.weakSubjects || []).forEach(s => {
+        subjectOptions += `<option value="${s}">${s}</option>`;
+      });
+    } else {
+      (user.strongSubjects || []).forEach(s => {
+        subjectOptions += `<option value="${s}">${s}</option>`;
+      });
+    }
+
+    filterDiv.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 140px 130px 140px;gap:0.65rem;align-items:end;">
+        <div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">🔍 Search</label><input id="communitySearch" type="text" placeholder="Search by name, subject, or region..." style="width:100%;padding:0.55rem 0.75rem;" /></div>
+        <div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Subject</label><select id="subjectFilter" style="width:100%;padding:0.55rem 0.75rem;">${subjectOptions}</select></div>
+        <div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Region</label><input id="regionFilter" type="text" placeholder="Filter..." style="width:100%;padding:0.55rem 0.75rem;" /></div>
+        <div><label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Sort</label><select id="sortBy" style="width:100%;padding:0.55rem 0.75rem;"><option value="rating">Highest Rated</option><option value="reviews">Most Reviews</option><option value="name-asc">Name A-Z</option><option value="name-desc">Name Z-A</option></select></div>
+      </div>
+    `;
+    resultsContainer?.parentNode?.insertBefore(filterDiv, resultsContainer);
+
+    // Event listeners for filter changes
+    filterDiv.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', renderFilteredCards);
+      el.addEventListener('change', renderFilteredCards);
+    });
+  }
+
+  // Hook into existing show functions
+  showTutors = async function() {
+    currentMode = 'tutors';
+    if (!resultsContainer) return;
+    buildFilterUI('tutors');
+    resultsContainer.innerHTML = '<p class="hint">Searching for tutors...</p>';
+    allMatchesCache = await matchTutorsForUser(user);
+    renderFilteredCards();
+  };
+  showStudents = async function() {
+    currentMode = 'students';
+    if (!resultsContainer) return;
+    buildFilterUI('students');
+    resultsContainer.innerHTML = '<p class="hint">Searching for students...</p>';
+    allMatchesCache = await matchStudentsForUser(user);
+    renderFilteredCards();
+  };
+
   // make notifications available on dashboard
   setupNotificationBell();
 
-  // subscribe sessions to update request buttons state (prevent duplicates)
+  // Subscribe sessions to update request buttons state (prevent duplicates)
   try {
     if (user && user.id) {
       subscribeSessionsForUser(user.id, (list) => {
@@ -998,6 +1206,149 @@ async function initDashboardPage() {
   // Profile modal: not defined inside dashboard; shared globally below.
 }
 
+async function openEditProfileModal(targetUser) {
+  const modalContainer = getModalContainer();
+  if (!modalContainer) return;
+  const currStrong = [...(targetUser.strongSubjects || [])];
+  const currWeak = [...(targetUser.weakSubjects || [])];
+  const currAvailDays = [...(targetUser.availabilityDays || [])];
+  const currAvailTime = [...(targetUser.availabilityTime || [])];
+  const addr = targetUser.address || {};
+
+  function renderEditChips(container, items, selectedArray) {
+    if (!container) return;
+    container.innerHTML = '';
+    items.forEach(item => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip' + (selectedArray.includes(item) ? ' active' : '');
+      chip.textContent = item;
+      chip.addEventListener('click', () => {
+        const idx = selectedArray.indexOf(item);
+        if (idx === -1) selectedArray.push(item);
+        else selectedArray.splice(idx, 1);
+        renderEditChips(container, items, selectedArray);
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  const body = `
+    <div class="session-dialog"><h3 style="margin-bottom:0.5rem;">Edit Profile</h3>
+    <div class="card session-form-card" style="max-height:72vh;overflow-y:auto;padding:1rem;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;">
+        <label>Full Name<input id="editName" value="${targetUser.name || ''}" /></label>
+        <label>Email<input id="editEmail" value="${targetUser.email || ''}" /></label>
+        <label>Phone<input id="editPhone" value="${targetUser.phone || ''}" /></label>
+        <label>Region / Locality<input id="editRegion" value="${targetUser.region || ''}" /></label>
+        <label>City<input id="editCity" value="${addr.city || ''}" /></label>
+        <label>Door Number<input id="editDoor" value="${addr.doorNumber || ''}" /></label>
+        <label>Street / Area<input id="editStreet" value="${addr.street || ''}" /></label>
+        <label>State<input id="editState" value="${addr.state || ''}" /></label>
+        <div></div>
+        <label>Postal Code<input id="editPostal" value="${addr.postalCode || ''}" /></label>
+      </div>
+      <label style="margin-top:0.5rem;">Bio<textarea id="editBio" rows="2">${targetUser.bio || ''}</textarea></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-top:0.5rem;">
+        <label>Strong Subjects<div id="editStrongChips" class="chip-container"></div></label>
+        <label>Weak Subjects<div id="editWeakChips" class="chip-container"></div></label>
+        <label>Availability Days<div id="editAvailDaysChips" class="chip-container"></div></label>
+        <label>Availability Time<div id="editAvailTimeChips" class="chip-container"></div></label>
+      </div>
+      <hr style="border-color:rgba(213,184,147,0.2);margin:0.85rem 0;" />
+      <h4 style="margin:0 0 0.6rem;color:var(--tan);font-size:0.9rem;">Change Password</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.65rem;">
+        <label>Current Password<input id="editCurPw" type="password" placeholder="Required to change" /></label>
+        <label>New Password<input id="editNewPw" type="password" placeholder="Min 6 chars" /></label>
+        <label>Confirm New Password<input id="editConfirmPw" type="password" placeholder="Re-enter new" /></label>
+      </div>
+      <div id="editPwError" style="color:#ef4444;font-size:0.82rem;min-height:1.1em;margin-top:4px;"></div>
+    </div>
+    <div class="actions" style="margin-top:0.75rem;"><button id="cancelEditBtn" class="btn secondary">Cancel</button><button id="saveEditBtn" class="btn"><span class="btn-text">Save Changes</span><span class="btn-spinner hidden"></span></button></div></div>`;
+
+  openModal(body);
+  const modalEl = modalContainer.querySelector('.modal');
+  if (modalEl) {
+    modalEl.classList.add('session-modal', 'solid');
+    modalEl.style.maxWidth = '720px';
+  }
+
+  renderEditChips(document.getElementById('editStrongChips'), SUBJECTS, currStrong);
+  renderEditChips(document.getElementById('editWeakChips'), SUBJECTS, currWeak);
+  renderEditChips(document.getElementById('editAvailDaysChips'), AVAILABILITY_DAYS, currAvailDays);
+  renderEditChips(document.getElementById('editAvailTimeChips'), AVAILABILITY_TIMES, currAvailTime);
+
+  document.getElementById('cancelEditBtn')?.addEventListener('click', closeModal);
+  document.getElementById('saveEditBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('saveEditBtn');
+    const spinner = btn?.querySelector('.btn-spinner');
+    const text = btn?.querySelector('.btn-text');
+    const pwError = document.getElementById('editPwError');
+    if (btn) { btn.disabled = true; if (spinner) spinner.classList.remove('hidden'); if (text) text.textContent = 'Saving...'; }
+
+    const updates = {
+      name: document.getElementById('editName')?.value || targetUser.name,
+      email: (document.getElementById('editEmail')?.value || '').trim().toLowerCase(),
+      phone: document.getElementById('editPhone')?.value || '',
+      region: document.getElementById('editRegion')?.value || '',
+      bio: document.getElementById('editBio')?.value || '',
+      strongSubjects: [...currStrong],
+      weakSubjects: [...currWeak],
+      availabilityDays: [...currAvailDays],
+      availabilityTime: [...currAvailTime],
+      address: {
+        doorNumber: document.getElementById('editDoor')?.value || '',
+        street: document.getElementById('editStreet')?.value || '',
+        city: document.getElementById('editCity')?.value || '',
+        state: document.getElementById('editState')?.value || '',
+        postalCode: document.getElementById('editPostal')?.value || ''
+      }
+    };
+
+    // Handle password change
+    const curPw = document.getElementById('editCurPw')?.value || '';
+    const newPw = document.getElementById('editNewPw')?.value || '';
+    const confirmPw = document.getElementById('editConfirmPw')?.value || '';
+
+    if (curPw || newPw || confirmPw) {
+      const storedHash = targetUser.password || '';
+      const curHash = await hashPassword(curPw);
+      if (curHash !== storedHash) {
+        if (pwError) pwError.textContent = 'Current password is incorrect.';
+        if (btn) { btn.disabled = false; if (spinner) spinner.classList.add('hidden'); if (text) text.textContent = 'Save Changes'; }
+        return;
+      }
+      if (newPw.length < 6) {
+        if (pwError) pwError.textContent = 'New password must be at least 6 characters.';
+        if (btn) { btn.disabled = false; if (spinner) spinner.classList.add('hidden'); if (text) text.textContent = 'Save Changes'; }
+        return;
+      }
+      if (newPw !== confirmPw) {
+        if (pwError) pwError.textContent = 'New passwords do not match.';
+        if (btn) { btn.disabled = false; if (spinner) spinner.classList.add('hidden'); if (text) text.textContent = 'Save Changes'; }
+        return;
+      }
+      updates.password = await hashPassword(newPw);
+    }
+
+    try {
+      await updateUser(targetUser.id, updates);
+      const fresh = await getUserById(targetUser.id);
+      if (fresh) {
+        setCurrentUser(fresh);
+        closeModal();
+        showToast('Profile updated successfully');
+        const profileContent = document.getElementById('profileContent');
+        if (profileContent) initProfilePage();
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to update profile');
+      if (btn) { btn.disabled = false; if (spinner) spinner.classList.add('hidden'); if (text) text.textContent = 'Save Changes'; }
+    }
+  });
+}
+
 async function initProfilePage() {
   const user = requireUserOrRedirect();
   if (!user) return;
@@ -1006,10 +1357,12 @@ async function initProfilePage() {
   localStorage.removeItem('peerbridgeViewProfile');
 
   let userToShow = user;
+  let isOwnProfile = true;
   if (viewId && viewId !== user.id) {
     const allUsers = await getAllUsers();
     const targetUser = allUsers.find((item) => item.id === viewId);
     if (targetUser) userToShow = targetUser;
+    isOwnProfile = false;
   } else {
     const fresh = await getUserById(user.id);
     if (fresh) {
@@ -1020,19 +1373,28 @@ async function initProfilePage() {
 
   const profileContent = document.getElementById('profileContent');
   if (!profileContent) return;
-  // reuse modal style cards for profile page for consistent look
-  const strongTags = (userToShow.strongSubjects || []).map(s => `<span class="tag">${s}</span>`).join('');
-  const weakTags = (userToShow.weakSubjects || []).map(s => `<span class="tag">${s}</span>`).join('');
-  const availability = (userToShow.availabilityDays || []).map(d => `<span class="badge">${d}</span>`).join('') + ' ' + (userToShow.availabilityTime || []).map(t => `<span class="badge">${t}</span>`).join(' ');
-  const address = userToShow.address || {};
-  const addressText = `${address.doorNumber ? address.doorNumber + ', ' : ''}${address.street ? address.street + '<br/>' : ''}${address.city ? address.city + '<br/>' : ''}${address.state ? address.state + ' - ' : ''}${address.postalCode || ''}`;
-  const starCount = ratingToStars(userToShow.rating != null ? userToShow.rating : 3);
-  const starsHtml = '<span class="stars">' + '★'.repeat(starCount) + '</span>';
-  const reviewsSummary = `<div class="meta">${starsHtml}<span class="review-count"> ${userToShow.totalRatings || 0} Reviews</span></div>`;
-  const left = `<div class="profile-left"><div class="profile-identity card"><div class="avatar-placeholder">${(userToShow.name||'?').slice(0,1)}</div><div><h3>${userToShow.name || 'Unknown'}</h3>${reviewsSummary}</div></div><div class="card"><div class="profile-label">Email</div><div class="profile-value">${userToShow.email || '-'}</div></div><div class="card"><div class="profile-label">Phone</div><div class="profile-value">${userToShow.phone || '-'}</div></div><div class="card"><div class="profile-label">Region</div><div class="profile-value">${userToShow.region || '-'}</div></div><div class="card"><div class="profile-label">About Me</div><div class="profile-value">${userToShow.bio || 'No bio added.'}</div></div></div>`;
-  const middle = `<div class="profile-middle"><div class="card"><div class="profile-label">Address</div><div class="profile-value">${addressText || '-'}</div></div><div class="card"><div class="profile-label">Availability</div><div class="profile-value">${availability || '-'}</div></div><div class="card"><div class="profile-label">Strong Subjects</div><div class="profile-value">${strongTags || '-'}</div></div><div class="card"><div class="profile-label">Weak Subjects</div><div class="profile-value">${weakTags || '-'}</div></div></div>`;
-  const right = `<div class="profile-right"><div id="profileReviews" class="card reviews-column"><div class="profile-label">Reviews</div><div class="profile-value">No reviews yet.</div></div></div>`;
-  profileContent.innerHTML = `<div class="profile-page-shell"><div class="profile-modal-grid">${left}${middle}${right}</div></div>`;
+
+  async function renderProfile(targetUser) {
+    const strongTags = (targetUser.strongSubjects || []).map(s => `<span class="tag">${s}</span>`).join('');
+    const weakTags = (targetUser.weakSubjects || []).map(s => `<span class="tag">${s}</span>`).join('');
+    const availability = (targetUser.availabilityDays || []).map(d => `<span class="badge">${d}</span>`).join('') + ' ' + (targetUser.availabilityTime || []).map(t => `<span class="badge">${t}</span>`).join(' ');
+    const address = targetUser.address || {};
+    const addressText = `${address.doorNumber ? address.doorNumber + ', ' : ''}${address.street ? address.street + '<br/>' : ''}${address.city ? address.city + '<br/>' : ''}${address.state ? address.state + ' - ' : ''}${address.postalCode || ''}`;
+    const starCount = ratingToStars(targetUser.rating != null ? targetUser.rating : 3);
+    const starsHtml = '<span class="stars">' + '★'.repeat(starCount) + '</span>';
+    const reviewsSummary = `<div class="meta">${starsHtml}<span class="review-count"> ${targetUser.totalRatings || 0} Reviews</span></div>`;
+    const editBtn = isOwnProfile ? `<button id="editProfileBtn" class="btn" style="position:absolute;top:0;right:0;padding:6px 10px;font-size:0.8rem;">✎ Edit</button>` : '';
+    const left = `<div style="position:relative;width:100%;">${editBtn}<div class="profile-left"><div class="profile-identity card"><div class="avatar-placeholder">${(targetUser.name||'?').slice(0,1)}</div><div><h3>${targetUser.name || 'Unknown'}</h3>${reviewsSummary}</div></div><div class="card"><div class="profile-label">Email</div><div class="profile-value">${targetUser.email || '-'}</div></div><div class="card"><div class="profile-label">Phone</div><div class="profile-value">${targetUser.phone || '-'}</div></div><div class="card"><div class="profile-label">Region / Locality</div><div class="profile-value">${targetUser.region || '-'}</div></div><div class="card"><div class="profile-label">About Me</div><div class="profile-value">${targetUser.bio || 'No bio added.'}</div></div></div></div>`;
+    const middle = `<div class="profile-middle"><div class="card"><div class="profile-label">Address</div><div class="profile-value">${addressText || '-'}</div></div><div class="card"><div class="profile-label">Availability</div><div class="profile-value">${availability || '-'}</div></div><div class="card"><div class="profile-label">Strong Subjects</div><div class="profile-value">${strongTags || '-'}</div></div><div class="card"><div class="profile-label">Weak Subjects</div><div class="profile-value">${weakTags || '-'}</div></div></div>`;
+    const right = `<div class="profile-right"><div id="profileReviews" class="card reviews-column"><div class="profile-label">Reviews</div><div class="profile-value">No reviews yet.</div></div></div>`;
+    profileContent.innerHTML = `<div class="profile-page-shell"><div class="profile-modal-grid">${left}${middle}${right}</div></div>`;
+
+    if (isOwnProfile) {
+      document.getElementById('editProfileBtn')?.addEventListener('click', () => openEditProfileModal(targetUser));
+    }
+  }
+
+  await renderProfile(userToShow);
   // load reviews area
   (async () => {
     try {
@@ -1074,20 +1436,37 @@ async function initSessionsPage() {
     const active = sessions.filter(s => (s.status || '').toLowerCase() !== 'completed');
     const completed = sessions.filter(s => (s.status || '').toLowerCase() === 'completed');
 
-    // Sort active sessions: accepted first, then pending/request/offer, then declined
+    // Sort active sessions: accepted (upcoming first), then pending (newest first), then declined
+    function getSessionDateMs(s) {
+      if (!s.date) return 0;
+      const parsed = new Date(s.date + 'T12:00:00');
+      return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+    }
     function sortActiveSessions(a, b) {
       const order = { 'accepted': 0, 'pending': 1, 'rejected': 2, 'declined': 2 };
       const aOrd = order[(a.status || '').toLowerCase()] ?? 3;
       const bOrd = order[(b.status || '').toLowerCase()] ?? 3;
       if (aOrd !== bOrd) return aOrd - bOrd;
-      // Within same status, newest first by createdAt
+      // For accepted sessions: upcoming dates first (closest future date on top)
+      const aStatus = (a.status || '').toLowerCase();
+      const bStatus = (b.status || '').toLowerCase();
+      if (aStatus === 'accepted' && bStatus === 'accepted') {
+        const aDateMs = getSessionDateMs(a);
+        const bDateMs = getSessionDateMs(b);
+        // Both have dates: sort by closest to today (ascending)
+        if (aDateMs && bDateMs) return aDateMs - bDateMs;
+        // One has no date: put with-date first
+        if (aDateMs) return -1;
+        if (bDateMs) return 1;
+      }
+      // For pending/declined: newest first by createdAt
       const ta = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
       const tb = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
       return tb - ta;
     }
     active.sort(sortActiveSessions);
 
-    // Sort completed sessions: newest first
+    // Sort completed sessions: newest completion first
     function sortCompletedSessions(a, b) {
       const ta = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
       const tb = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
