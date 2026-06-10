@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body data-page="home">
-  <!-- Ambient background graphics -->
   <div class="hero-bg">
     <div class="hero-particle-left" aria-hidden="true">
       <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -78,68 +77,124 @@
     </nav>
   </header>
 
-  <main class="container hero">
-    <section class="hero-card">
-      <p class="eyebrow">Velammal College of Engineering and Technology</p>
-      <h1>Hello Velammalian! Welcome to PeerBridge.</h1>
-      <p>Connect, learn, and grow with a smart peer tutoring network built for your campus community.</p>
-      <div class="button-row">
-        <a class="btn" href="register.html">Register</a>
-        <button type="button" id="openLogin" class="btn secondary">Login</button>
-      </div>
-      <div id="loginPanel" class="card login-panel hidden" aria-hidden="true" style="margin-top: 1rem;">
-        <div class="login-header">
-          <h2>Welcome Back</h2>
-          <p class="subtitle">Sign in to access your PeerBridge account.</p>
+  <main class="container">
+    <!-- 1. HERO -->
+    <section class="hero-section">
+      <div class="hero-card">
+        <p class="eyebrow">Velammal College of Engineering and Technology</p>
+        <h1>Hello Velammalian! Welcome to PeerBridge.</h1>
+        <p>Connect, learn, and grow with a smart peer tutoring network built for your campus community.</p>
+        <div class="button-row">
+          <a class="btn" href="register.html">Register</a>
+          <button type="button" id="openLogin" class="btn secondary">Login</button>
         </div>
-        <form id="loginForm" novalidate>
-          <div class="field">
-            <div class="input-wrapper">
-              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-              <input id="emailInput" type="email" name="email" placeholder="Enter your email" required autocomplete="username" />
-            </div>
-            <div id="emailError" class="field-error" aria-live="polite"></div>
+        <div id="loginPanel" class="card login-panel hidden" aria-hidden="true" style="margin-top: 1rem;">
+          <div class="login-header">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to access your PeerBridge account.</p>
           </div>
-          <div class="field">
-            <div class="password-wrapper">
-              <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              <input id="passwordInput" type="password" name="password" placeholder="Enter your password" required minlength="6" autocomplete="current-password" />
-              <button type="button" id="togglePassword" class="icon-btn" aria-label="Show password">
-                <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                <svg class="icon-eye-slash hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a22.65 22.65 0 0 1 5.36-6.14"></path><path d="M1 1l22 22"></path></svg>
+          <form id="loginForm" novalidate>
+            <div class="field">
+              <div class="input-wrapper">
+                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <input id="emailInput" type="email" name="email" placeholder="Enter your email" required autocomplete="username" />
+              </div>
+              <div id="emailError" class="field-error" aria-live="polite"></div>
+            </div>
+            <div class="field">
+              <div class="password-wrapper">
+                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <input id="passwordInput" type="password" name="password" placeholder="Enter your password" required minlength="6" autocomplete="current-password" />
+                <button type="button" id="togglePassword" class="icon-btn" aria-label="Show password">
+                  <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <svg class="icon-eye-slash hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a22.65 22.65 0 0 1 5.36-6.14"></path><path d="M1 1l22 22"></path></svg>
+                </button>
+              </div>
+              <div id="capsWarning" class="field-warning" aria-live="polite"></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" id="signInButton" class="btn primary">
+                <span class="btn-text">Sign In</span>
+                <span class="btn-spinner hidden" aria-hidden="true"></span>
               </button>
             </div>
-            <div id="capsWarning" class="field-warning" aria-live="polite"></div>
-          </div>
-          <div class="form-actions">
-            <button type="submit" id="signInButton" class="btn primary">
-              <span class="btn-text">Sign In</span>
-              <span class="btn-spinner hidden" aria-hidden="true"></span>
-            </button>
-          </div>
-          <div id="loginError" class="form-error" role="alert" aria-live="assertive"></div>
-        </form>
+            <div id="loginError" class="form-error" role="alert" aria-live="assertive"></div>
+          </form>
+        </div>
       </div>
     </section>
 
-    <!-- Features -->
-    <section class="features">
-      <div class="feature-card">
-        <h3>Smart Matching</h3>
-        <p>Automatically connects students with tutors based on subject strengths.</p>
-      </div>
-      <div class="feature-card">
-        <h3>Session Scheduling</h3>
-        <p>Book tutoring sessions easily with available tutors.</p>
-      </div>
-      <div class="feature-card">
-        <h3>Peer Ratings</h3>
-        <p>Students rate sessions to build a trusted learning network.</p>
+    <div class="section-divider"></div>
+
+    <!-- 2. WHY PEERBRIDGE EXISTS -->
+    <section class="why-section">
+      <h2 class="section-title">Why PeerBridge Exists</h2>
+      <div class="why-content">
+        <div class="why-text">
+          <p>Many students struggle with subjects while other students excel in them.</p>
+          <p>PeerBridge was created to connect these students and make learning more collaborative, accessible, and community-driven.</p>
+          <p class="why-highlight">The goal is simple: Help students learn from students.</p>
+          <p>By combining subject matching, flexible scheduling, peer reviews, availability-based booking, and academic collaboration, PeerBridge creates an environment where students can grow together and succeed together.</p>
+        </div>
+        <div class="why-visual" aria-hidden="true">
+          <svg viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="140" cy="140" r="100" stroke="rgba(213,184,147,0.1)" stroke-width="0.8"/>
+            <circle cx="140" cy="140" r="70" stroke="rgba(96,165,250,0.08)" stroke-width="0.6" stroke-dasharray="5 7"/>
+            <circle cx="140" cy="140" r="40" stroke="rgba(213,184,147,0.08)" stroke-width="0.5"/>
+            <circle cx="140" cy="45" r="5" fill="#d5b893" opacity="0.3"/><circle cx="140" cy="45" r="2" fill="#fff" opacity="0.4"/>
+            <circle cx="215" cy="100" r="4" fill="#60a5fa" opacity="0.3"/><circle cx="215" cy="100" r="1.5" fill="#fff" opacity="0.4"/>
+            <circle cx="215" cy="180" r="4" fill="#d5b893" opacity="0.25"/>
+            <circle cx="140" cy="235" r="4" fill="#60a5fa" opacity="0.25"/>
+            <circle cx="65" cy="180" r="4" fill="#d5b893" opacity="0.2"/>
+            <circle cx="65" cy="100" r="3" fill="#60a5fa" opacity="0.2"/>
+            <line x1="140" y1="45" x2="215" y2="100" stroke="rgba(213,184,147,0.12)" stroke-width="0.8"/>
+            <line x1="215" y1="100" x2="215" y2="180" stroke="rgba(96,165,250,0.1)" stroke-width="0.6"/>
+            <line x1="140" y1="235" x2="65" y2="180" stroke="rgba(213,184,147,0.1)" stroke-width="0.6"/>
+            <line x1="65" y1="100" x2="140" y2="45" stroke="rgba(96,165,250,0.08)" stroke-width="0.5"/>
+            <line x1="140" y1="140" x2="140" y2="45" stroke="rgba(213,184,147,0.06)" stroke-width="0.4"/>
+            <line x1="140" y1="140" x2="215" y2="100" stroke="rgba(96,165,250,0.05)" stroke-width="0.4"/>
+            <line x1="140" y1="140" x2="65" y2="180" stroke="rgba(213,184,147,0.05)" stroke-width="0.4"/>
+            <circle cx="140" cy="140" r="6" fill="rgba(213,184,147,0.15)"/>
+            <circle cx="140" cy="140" r="2.5" fill="#d5b893" opacity="0.4"/>
+          </svg>
+        </div>
       </div>
     </section>
 
-    <!-- Statistics -->
+    <!-- 3. FEATURES -->
+    <section class="features-row">
+      <div class="feature-strip">
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <h3>Smart Matching</h3>
+          <p>Automatically connects students with tutors based on subject strengths.</p>
+        </div>
+        <div class="feature-divider-v" aria-hidden="true"></div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Session Scheduling</h3>
+          <p>Book tutoring sessions easily with available tutors.</p>
+        </div>
+        <div class="feature-divider-v" aria-hidden="true"></div>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <h3>Peer Ratings</h3>
+          <p>Students rate sessions to build a trusted learning network.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- 4. PLATFORM IMPACT -->
     <section class="stats-section" id="statsSection">
+      <h2 class="section-title">Platform Impact</h2>
       <div class="stats-container card">
         <div class="stats-grid">
           <div class="stat-card">
@@ -148,28 +203,30 @@
           </div>
           <div class="stat-card">
             <div class="stat-number" data-target="0" id="statSessions">0</div>
-            <div class="stat-label">Sessions Completed</div>
+            <div class="stat-label">Successful Learning Sessions</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number" data-target="0" id="statRating">0</div>
-            <div class="stat-label">Average Rating</div>
+            <div class="stat-number" data-target="0" id="statConnections">0</div>
+            <div class="stat-label">Peer Connections Made</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number" data-target="8" id="statSubjects">8</div>
-            <div class="stat-label">Subjects Available</div>
+            <div class="stat-number" data-target="0" id="statTutors">0</div>
+            <div class="stat-label">Active Peer Tutors</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- How it Works -->
+    <div class="section-divider"></div>
+
+    <!-- 5. HOW IT WORKS -->
     <section class="how-section">
       <h2 class="section-title">How PeerBridge Works</h2>
       <div class="how-grid">
         <div class="how-card">
           <div class="how-step">1</div>
           <h3>Create Your Profile</h3>
-          <p>Create your academic profile, add your strengths, learning interests, availability, and location.</p>
+          <p>Add your strengths, learning interests, availability, and location.</p>
         </div>
         <div class="how-connector" aria-hidden="true">
           <svg viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 6l6 6-6 6" stroke="rgba(213,184,147,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -177,7 +234,7 @@
         <div class="how-card">
           <div class="how-step">2</div>
           <h3>Discover Students</h3>
-          <p>Find peers who can help you learn or students who need help in subjects you understand.</p>
+          <p>Find peers who can help you learn or students who need your help.</p>
         </div>
         <div class="how-connector" aria-hidden="true">
           <svg viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 6l6 6-6 6" stroke="rgba(213,184,147,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -185,7 +242,7 @@
         <div class="how-card">
           <div class="how-step">3</div>
           <h3>Schedule Sessions</h3>
-          <p>Choose available slots and request learning sessions that fit both students' schedules.</p>
+          <p>Choose available slots that fit both students' schedules.</p>
         </div>
         <div class="how-connector" aria-hidden="true">
           <svg viewBox="0 0 40 24" fill="none"><path d="M2 12h30M28 6l6 6-6 6" stroke="rgba(213,184,147,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -193,98 +250,72 @@
         <div class="how-card">
           <div class="how-step">4</div>
           <h3>Learn, Teach & Grow</h3>
-          <p>Share knowledge, improve skills, build confidence, and help strengthen the learning community.</p>
+          <p>Share knowledge, improve skills, and strengthen the community.</p>
         </div>
       </div>
     </section>
 
-    <!-- About -->
+    <!-- 6. ABOUT -->
     <section class="about-section">
-      <h2 class="section-title">About PeerBridge</h2>
-      <div class="about-content card">
-        <p>PeerBridge is a student-driven peer learning platform designed to connect learners and mentors within the same academic community.</p>
-        <p>The platform helps students discover peers who excel in specific subjects, schedule learning sessions, exchange knowledge, and build meaningful academic connections.</p>
-        <p class="about-highlight">PeerBridge was created with a simple vision: <em>Learning becomes easier when students support students.</em></p>
-        <p>By combining subject-based matching, flexible scheduling, peer reviews, and community-driven collaboration, PeerBridge creates an environment where students can learn together, grow together, and succeed together.</p>
-        <p>Whether a student needs help understanding difficult concepts or wants to share knowledge with others, PeerBridge provides a structured and trusted space for academic collaboration.</p>
+      <div class="about-layout">
+        <div class="about-left">
+          <h2 class="section-title">About PeerBridge</h2>
+          <p class="about-mission">A student-driven peer learning platform designed to connect learners and mentors within the same academic community.</p>
+        </div>
+        <div class="about-right card">
+          <p>The platform helps students discover peers who excel in specific subjects, schedule learning sessions, exchange knowledge, and build meaningful academic connections.</p>
+          <p class="about-highlight">Learning becomes easier when students support students.</p>
+          <p>By combining subject-based matching, flexible scheduling, peer reviews, and community-driven collaboration, PeerBridge creates an environment where students can learn together, grow together, and succeed together.</p>
+          <p>Whether a student needs help understanding difficult concepts or wants to share knowledge with others, PeerBridge provides a structured and trusted space for academic collaboration.</p>
+        </div>
       </div>
     </section>
 
-    <!-- FAQ -->
+    <!-- 7. CTA -->
+    <section class="cta-section">
+      <h2>Ready to Start Learning Together?</h2>
+      <p>Join PeerBridge and connect with students who can help you learn, teach, and grow.</p>
+      <div class="button-row">
+        <a class="btn" href="register.html">Create Account</a>
+        <button type="button" class="btn secondary" onclick="document.getElementById('openLogin')?.click();window.scrollTo({top:0,behavior:'smooth'})">Login</button>
+      </div>
+    </section>
+
+    <!-- 8. FAQ -->
     <section class="faq-section">
       <h2 class="section-title">Frequently Asked Questions</h2>
       <div class="faq-list">
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>What is PeerBridge?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>PeerBridge is a peer-to-peer learning platform that connects students who want to learn with students who are willing to teach and share knowledge.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>What is PeerBridge?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>PeerBridge is a peer-to-peer learning platform that connects students who want to learn with students who are willing to teach and share knowledge.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>Who can use PeerBridge?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>Any student within the academic community can use PeerBridge to learn, teach, schedule sessions, and collaborate with peers.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>Who can use PeerBridge?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>Any student within the academic community can use PeerBridge to learn, teach, schedule sessions, and collaborate with peers.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>How are tutors selected?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>Students are matched based on subjects, ratings, availability, and location preferences, helping learners find the most suitable peer mentors.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>How are tutors selected?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>Students are matched based on subjects, ratings, availability, and location preferences, helping learners find the most suitable peer mentors.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>Can I be both a learner and a tutor?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>Yes. Students can seek help in subjects they are learning while also helping others in subjects they are confident in.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>Can I be both a learner and a tutor?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>Yes. Students can seek help in subjects they are learning while also helping others in subjects they are confident in.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>How does session scheduling work?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>Sessions can only be requested during the availability selected by the tutor. The platform automatically prevents scheduling conflicts and double bookings.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>How does session scheduling work?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>Sessions can only be requested during the availability selected by the tutor. The platform automatically prevents scheduling conflicts and double bookings.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>How are ratings calculated?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>Ratings are submitted after completed sessions and help maintain a trusted learning environment for all users.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>How are ratings calculated?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>Ratings are submitted after completed sessions and help maintain a trusted learning environment for all users.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>Is PeerBridge free?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>Yes. PeerBridge is designed as an educational collaboration platform that encourages students to help one another learn and grow.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>Is PeerBridge free?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>Yes. PeerBridge is designed as an educational collaboration platform that encourages students to help one another learn and grow.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span>What happens after a session is completed?</span>
-            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          <div class="faq-answer">
-            <p>Both participants can leave ratings and feedback, helping improve the quality and reliability of the community.</p>
-          </div>
+          <button class="faq-question" aria-expanded="false"><span>What happens after a session is completed?</span><svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+          <div class="faq-answer"><p>Both participants can leave ratings and feedback, helping improve the quality and reliability of the community.</p></div>
         </div>
       </div>
     </section>

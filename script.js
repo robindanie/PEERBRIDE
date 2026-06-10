@@ -824,7 +824,7 @@ async function initRegisterPage() {
   const selectedAvailabilityDays = [];
   const selectedAvailabilityTime = [];
 
-  function renderChips(container, selectedArray, oppositeArray, items = []) {
+  function renderChips(container, selectedArray, oppositeArray, items = [], addCustom = false, rerenderFn) {
     if (!container) return;
     container.innerHTML = '';
     const subjectList = items.length ? items : SUBJECTS;
@@ -847,19 +847,56 @@ async function initRegisterPage() {
         } else {
           selectedArray.splice(idx, 1);
         }
-        renderChips(strongContainer, selectedStrong, selectedWeak, SUBJECTS);
-        renderChips(weakContainer, selectedWeak, selectedStrong, SUBJECTS);
-        renderChips(availabilityDaysContainer, selectedAvailabilityDays, null, AVAILABILITY_DAYS);
-        renderChips(availabilityTimeContainer, selectedAvailabilityTime, null, AVAILABILITY_TIMES);
+        rerenderFn();
       });
       container.appendChild(chip);
     });
+
+    // Add "+ Add Subject" button for custom subjects
+    if (addCustom) {
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'add-subject-btn';
+      addBtn.textContent = '+ Add Subject';
+      addBtn.addEventListener('click', () => {
+        // Replace button with input
+        const inputWrap = document.createElement('div');
+        inputWrap.className = 'custom-subject-input';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Enter subject name...';
+        const addConfirm = document.createElement('button');
+        addConfirm.type = 'button';
+        addConfirm.textContent = 'Add';
+        addConfirm.addEventListener('click', () => {
+          const val = input.value.trim();
+          if (!val) return;
+          if (selectedArray.includes(val)) { showToast('Subject already added'); return; }
+          if (oppositeArray && oppositeArray.includes(val)) {
+            oppositeArray.splice(oppositeArray.indexOf(val), 1);
+          }
+          selectedArray.push(val);
+          rerenderFn();
+        });
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addConfirm.click(); });
+        inputWrap.appendChild(input);
+        inputWrap.appendChild(addConfirm);
+        container.appendChild(inputWrap);
+        input.focus();
+        addBtn.style.display = 'none';
+      });
+      container.appendChild(addBtn);
+    }
   }
 
-  renderChips(strongContainer, selectedStrong, selectedWeak, SUBJECTS);
-  renderChips(weakContainer, selectedWeak, selectedStrong, SUBJECTS);
-  renderChips(availabilityDaysContainer, selectedAvailabilityDays, null, AVAILABILITY_DAYS);
-  renderChips(availabilityTimeContainer, selectedAvailabilityTime, null, AVAILABILITY_TIMES);
+  function rerenderAllChips() {
+    renderChips(strongContainer, selectedStrong, selectedWeak, SUBJECTS, true, rerenderAllChips);
+    renderChips(weakContainer, selectedWeak, selectedStrong, SUBJECTS, true, rerenderAllChips);
+    renderChips(availabilityDaysContainer, selectedAvailabilityDays, null, AVAILABILITY_DAYS, false, rerenderAllChips);
+    renderChips(availabilityTimeContainer, selectedAvailabilityTime, null, AVAILABILITY_TIMES, false, rerenderAllChips);
+  }
+
+  rerenderAllChips();
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -1216,10 +1253,16 @@ async function openEditProfileModal(targetUser) {
   const currAvailTime = [...(targetUser.availabilityTime || [])];
   const addr = targetUser.address || {};
 
-  function renderEditChips(container, items, selectedArray) {
+  function renderEditChips(container, items, selectedArray, addCustom = false, rerenderFn) {
     if (!container) return;
     container.innerHTML = '';
-    items.forEach(item => {
+    const allItems = [...items];
+    // Add any custom subjects that aren't in the default list
+    selectedArray.forEach(s => {
+      if (!allItems.includes(s)) allItems.push(s);
+    });
+
+    allItems.forEach(item => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'chip' + (selectedArray.includes(item) ? ' active' : '');
@@ -1228,10 +1271,49 @@ async function openEditProfileModal(targetUser) {
         const idx = selectedArray.indexOf(item);
         if (idx === -1) selectedArray.push(item);
         else selectedArray.splice(idx, 1);
-        renderEditChips(container, items, selectedArray);
+        if (rerenderFn) rerenderFn();
+        else renderEditChips(container, items, selectedArray, addCustom, rerenderFn);
       });
       container.appendChild(chip);
     });
+
+    if (addCustom) {
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'add-subject-btn';
+      addBtn.textContent = '+ Add Subject';
+      addBtn.addEventListener('click', () => {
+        const inputWrap = document.createElement('div');
+        inputWrap.className = 'custom-subject-input';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Enter subject name...';
+        const addConfirm = document.createElement('button');
+        addConfirm.type = 'button';
+        addConfirm.textContent = 'Add';
+        addConfirm.addEventListener('click', () => {
+          const val = input.value.trim();
+          if (!val) return;
+          if (selectedArray.includes(val)) { showToast('Subject already added'); return; }
+          selectedArray.push(val);
+          if (rerenderFn) rerenderFn();
+        });
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addConfirm.click(); });
+        inputWrap.appendChild(input);
+        inputWrap.appendChild(addConfirm);
+        container.appendChild(inputWrap);
+        input.focus();
+        addBtn.style.display = 'none';
+      });
+      container.appendChild(addBtn);
+    }
+  }
+
+  function rerenderEditChips() {
+    renderEditChips(document.getElementById('editStrongChips'), SUBJECTS, currStrong, true, rerenderEditChips);
+    renderEditChips(document.getElementById('editWeakChips'), SUBJECTS, currWeak, true, rerenderEditChips);
+    renderEditChips(document.getElementById('editAvailDaysChips'), AVAILABILITY_DAYS, currAvailDays, false, rerenderEditChips);
+    renderEditChips(document.getElementById('editAvailTimeChips'), AVAILABILITY_TIMES, currAvailTime, false, rerenderEditChips);
   }
 
   profileContent.innerHTML = `
@@ -1284,10 +1366,7 @@ async function openEditProfileModal(targetUser) {
     </div>
   `;
 
-  renderEditChips(document.getElementById('editStrongChips'), SUBJECTS, currStrong);
-  renderEditChips(document.getElementById('editWeakChips'), SUBJECTS, currWeak);
-  renderEditChips(document.getElementById('editAvailDaysChips'), AVAILABILITY_DAYS, currAvailDays);
-  renderEditChips(document.getElementById('editAvailTimeChips'), AVAILABILITY_TIMES, currAvailTime);
+  rerenderEditChips();
 
   document.getElementById('cancelEditPage')?.addEventListener('click', () => initProfilePage());
   document.getElementById('saveEditPage')?.addEventListener('click', async () => {
@@ -1392,10 +1471,44 @@ async function initProfilePage() {
     const starsHtml = '<span class="stars">' + '★'.repeat(starCount) + '</span>';
     const reviewsSummary = `<div class="meta">${starsHtml}<span class="review-count"> ${targetUser.totalRatings || 0} Reviews</span></div>`;
     const editBtn = isOwnProfile ? `<button id="editProfileBtn" class="btn" style="position:absolute;top:0;right:0;padding:6px 10px;font-size:0.8rem;">✎ Edit</button>` : '';
+
+    // Load profile statistics
+    let statsHtml = '';
+    try {
+      const allSessions = await getAllSessions();
+      const userSessions = allSessions.filter(s => s.studentID === targetUser.id || s.tutorID === targetUser.id);
+      const completedSessions = userSessions.filter(s => (s.status || '').toLowerCase() === 'completed');
+      const sessionsCount = completedSessions.length;
+      const avgRating = targetUser.rating != null ? ratingToStars(targetUser.rating) : 0;
+      const reviewsCount = targetUser.totalRatings || 0;
+      const subjectsCount = new Set([...(targetUser.strongSubjects || []), ...(targetUser.weakSubjects || [])]).size;
+
+      statsHtml = `
+        <div class="profile-stats">
+          <div class="profile-stat-card">
+            <div class="profile-stat-number">${avgRating > 0 ? '★'.repeat(avgRating) : '—'}</div>
+            <div class="profile-stat-label">Average Rating</div>
+          </div>
+          <div class="profile-stat-card">
+            <div class="profile-stat-number">${sessionsCount}</div>
+            <div class="profile-stat-label">Sessions Completed</div>
+          </div>
+          <div class="profile-stat-card">
+            <div class="profile-stat-number">${reviewsCount}</div>
+            <div class="profile-stat-label">Reviews Received</div>
+          </div>
+          <div class="profile-stat-card">
+            <div class="profile-stat-number">${subjectsCount}</div>
+            <div class="profile-stat-label">Subjects Shared</div>
+          </div>
+        </div>
+      `;
+    } catch (e) { console.warn('Profile stats load error', e); }
+
     const left = `<div style="position:relative;width:100%;">${editBtn}<div class="profile-left"><div class="profile-identity card"><div class="avatar-placeholder">${(targetUser.name||'?').slice(0,1)}</div><div><h3>${targetUser.name || 'Unknown'}</h3>${reviewsSummary}</div></div><div class="card"><div class="profile-label">Email</div><div class="profile-value">${targetUser.email || '-'}</div></div><div class="card"><div class="profile-label">Phone</div><div class="profile-value">${targetUser.phone || '-'}</div></div><div class="card"><div class="profile-label">Region / Locality</div><div class="profile-value">${targetUser.region || '-'}</div></div><div class="card"><div class="profile-label">About Me</div><div class="profile-value">${targetUser.bio || 'No bio added.'}</div></div></div></div>`;
     const middle = `<div class="profile-middle"><div class="card"><div class="profile-label">Address</div><div class="profile-value">${addressText || '-'}</div></div><div class="card"><div class="profile-label">Availability</div><div class="profile-value">${availability || '-'}</div></div><div class="card"><div class="profile-label">Strong Subjects</div><div class="profile-value">${strongTags || '-'}</div></div><div class="card"><div class="profile-label">Weak Subjects</div><div class="profile-value">${weakTags || '-'}</div></div></div>`;
     const right = `<div class="profile-right"><div id="profileReviews" class="card reviews-column"><div class="profile-label">Reviews</div><div class="profile-value">No reviews yet.</div></div></div>`;
-    profileContent.innerHTML = `<div class="profile-page-shell"><div class="profile-modal-grid">${left}${middle}${right}</div></div>`;
+    profileContent.innerHTML = `<div class="profile-page-shell">${statsHtml}<div class="profile-modal-grid">${left}${middle}${right}</div></div>`;
 
     if (isOwnProfile) {
       document.getElementById('editProfileBtn')?.addEventListener('click', () => openEditProfileModal(targetUser));
@@ -1678,11 +1791,31 @@ function initStats() {
         avgRating = (totalR / ratedUsers.length).toFixed(1);
       }
 
+      // Count unique peer connections (unique student-tutor pairs that had sessions)
+      const uniquePairs = new Set();
+      allSessions.forEach(s => {
+        const pair = [s.studentID, s.tutorID].sort().join('_');
+        uniquePairs.add(pair);
+      });
+      // Count all unique subjects across users
+      const allSubjectsSet = new Set();
+      allUsers.forEach(u => {
+        (u.strongSubjects || []).forEach(s => allSubjectsSet.add(s));
+        (u.weakSubjects || []).forEach(s => allSubjectsSet.add(s));
+      });
+
+      // Count active tutors (users who have at least one strong subject and have been involved in sessions)
+      const tutorIds = new Set();
+      allSessions.forEach(s => {
+        if (s.tutorID) tutorIds.add(s.tutorID);
+      });
+      const activeTutors = tutorIds.size;
+
       const targets = {
         statStudents: allUsers.length,
         statSessions: completed.length,
-        statRating: avgRating,
-        statSubjects: 8
+        statConnections: uniquePairs.size,
+        statTutors: activeTutors
       };
 
       // Animate count-up
