@@ -1592,7 +1592,9 @@ async function initProfilePage() {
       const reviews = await getReviewsForUser(userToShow.id);
       const container = document.getElementById('profileReviews');
       if (!container || !reviews.length) return;
-      container.innerHTML = `<div class="profile-label">Reviews</div><div class="reviews-summary">${starsHtml}<div>${reviews.length} Reviews</div></div>`;
+      const reviewsStarCount = ratingToStars(userToShow.rating != null ? userToShow.rating : 3);
+      const reviewsStarsHtml = '<span class="stars">' + '★'.repeat(reviewsStarCount) + '</span>';
+      container.innerHTML = `<div class="profile-label">Reviews</div><div class="reviews-summary">${reviewsStarsHtml}<div>${reviews.length} Reviews</div></div>`;
       const list = document.createElement('div');
       list.className = 'review-list';
       reviews.slice().reverse().forEach(r => {
