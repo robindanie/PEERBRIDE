@@ -69,13 +69,17 @@
 
   <header class="navbar">
     <a href="index.html" class="logo">PeerBridge</a>
-    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-    </button>
+    <div style="display:flex;align-items:center;gap:0.25rem;">
+      <button id="mobileNotifBell" class="notif-bell mobile-only" aria-label="Notifications" style="display:none;">🔔<span id="mobileNotifDot" class="dot hidden"></span></button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+    </div>
     <nav id="mainNav">
       <a href="student.html">Community</a>
       <a href="sessions.html">Sessions</a>
       <a href="profile.html">Profile</a>
+      <button id="navNotifBell" class="notif-bell" aria-haspopup="true" aria-expanded="false">🔔<span id="navNotifDot" class="dot hidden"></span></button>
       <a href="index.html" id="logoutBtn">Logout</a>
     </nav>
   </header>

@@ -427,6 +427,10 @@ button:hover, .btn:hover, .button-row button:hover { transform: translateY(-3px)
   .review-list { max-height: 320px; }
   .why-content { grid-template-columns: 1fr; }
   .why-visual { display: none; }
+  /* About section mobile stacking */
+  .about-layout { grid-template-columns: 1fr; }
+  .about-section .about-left,
+  .about-section .about-right { width: 100%; max-width: 100%; }
 }
 @media (max-width: 860px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
