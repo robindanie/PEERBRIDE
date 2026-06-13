@@ -6,6 +6,8 @@ PeerBridge is a web-based platform that helps students connect with peers for ac
 
 Originally developed as a hackathon solution, PeerBridge was later expanded and refined into a significantly improved web application prototype with enhanced user experience, mobile responsiveness, notifications, session management, and profile customization.
 
+> Note: This project was developed as a prototype for learning and demonstration purposes. The current implementation prioritizes functionality and experimentation over production-grade security and deployment practices.
+
 ---
 
 ## Problem Statement
