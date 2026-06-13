@@ -165,6 +165,8 @@ PeerBridge remains a prototype rather than a production-ready platform, but it r
 
 **Live Website:** https://peerbridge-robindanie2008-5409s-projects.vercel.app/
 
+**Project Demonstration Video:** [Watch Demo Video](https://drive.google.com/file/d/1A_W0bWPrJRA7pp4gRnl8FhR3KF15PWUe/view?usp=drive_link)
+
 ---
 
 ## Future Improvements
